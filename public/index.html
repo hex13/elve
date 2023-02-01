@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+    <canvas id="game" width="1024" height="1024"></canvas>
+    <script type="module">
+        import initElve from './pkg/elve.js';
+
+        initElve().then(api => {
+            console.log("API", api);
+            init();
+        });
+
+
+        function init() {
+            function check({shader, program} = {}) {
+            const err = gl.getError();
+            if (err) console.log("ERR",err);
+            if (shader) {
+                const info = gl.getShaderInfoLog(shader);
+                if (info) console.log(info)
+            }
+            if (program) {
+                const info = gl.getProgramInfoLog(program);
+                if (info) console.log(info);
+            }
+        }
+        const shaderSources = {
+            VERTEX_SHADER: `
+            attribute vec2 aPosition;
+            void main() {
+                gl_Position = vec4(aPosition, 0.0, 1.0);
+                gl_PointSize = 4.;
+            }
+            `,
+            FRAGMENT_SHADER:  `
+            void main() {
+                gl_FragColor = vec4(1.0, 1.0, 0.0, 0.2);
+            }
+            `,
+        };
+        const canvas = document.getElementById('game');
+        const gl = canvas.getContext('webgl2');
+
+        const shaders = Object.fromEntries(Object.entries(shaderSources).map(([k, source]) => {
+            const shader = gl.createShader(gl[k]);
+            check({shader});
+            gl.shaderSource(shader, source);
+            check({shader});
+            gl.compileShader(shader);
+            check({shader});
+            return [k.split('_')[0].toLowerCase(), shader];
+        }));
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, 1.0);
+        const program = gl.createProgram();
+        check({program});
+        gl.attachShader(program, shaders.fragment);
+        check({program});
+        gl.attachShader(program, shaders.vertex);
+        check({program});
+        console.log("SHADERS", shaders);
+        gl.linkProgram(program);
+        check({program});
+
+
+        const buffer = gl.createBuffer();
+        check({program});
+        gl.useProgram(program);
+        check({program});
+
+
+        const count = 1300;
+        const componentsPerVertex = 2;
+        const velocities = new Float32Array(count * componentsPerVertex);
+        const particles =  new Float32Array(count * componentsPerVertex);
+        let center;
+        function randomize(i) {
+            
+            let angle = Math.random() * Math.PI * 2;
+            
+            let speed = Math.random() * 0.0056;
+
+            velocities[i * componentsPerVertex] = center.x + speed * Math.cos(angle) + Math.sin(angle * 0.2 * speed) * 0.01;
+            velocities[i * componentsPerVertex + 1] = center.y + speed * Math.sin(angle) + Math.cos(angle) * 0.04 + 0.14;
+
+            {
+                let angle = Math.random() * Math.PI * 2;
+                let speed = Math.random() * 0.01 + 0.04;
+                particles[i * componentsPerVertex] = speed * Math.cos(angle);
+                particles[i * componentsPerVertex + 1] = -0.5 + speed * Math.sin(angle);
+
+            }
+        }
+        for (let i = 0; i < count; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            
+            let speed = Math.random() * 0.0056;
+
+            velocities[i * componentsPerVertex] = speed * Math.cos(angle) + Math.sin(angle * 0.2 * speed) * 0.01;
+            velocities[i * componentsPerVertex + 1] = speed * Math.sin(angle) + Math.cos(angle) * 0.01 + 0.02;
+
+            {
+                let angle = Math.random() * Math.PI * 2;
+                let speed = Math.random() * 0.01 + 0.04;
+                particles[i * componentsPerVertex] = speed * Math.cos(angle);
+                particles[i * componentsPerVertex + 1] = -0.5 + speed * Math.sin(angle);
+
+            }
+
+        }
+        function render() {
+            gl.clearColor(0.1, 0.0, 0.1, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, particles, gl.DYNAMIC_DRAW);
+
+            const aPosition = gl.getAttribLocation(program, 'aPosition');
+            gl.vertexAttribPointer(aPosition, componentsPerVertex, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(aPosition);
+
+            gl.drawArrays(gl.POINTS, 0, count);
+
+        }
+        
+        let angle = 0.0;
+        (function update() {
+            for (let i = 0; i < count; i++) {
+                const idx = i * componentsPerVertex;
+
+                const speed = 0.4;
+                particles[idx] += velocities[idx] * speed;
+                particles[idx + 1] += velocities[idx + 1] * speed;
+                velocities[idx + 1] -= 0.00029;
+
+
+            }
+            {
+                center = {x: (Math.random() - 0.5) * 0.1, y: (Math.random() - 0.5) * 0.1};
+                for (let i = 0; i < 100; i++) {
+                    const rnd = ~~(Math.random() * count);
+                    randomize(rnd);
+
+                }
+
+            }
+            angle += 0.1;
+            particles[0] = Math.cos(angle);
+            render();
+            requestAnimationFrame(update);
+        })();
+        
+
+
+        }
+
+
+
+    </script>
+</body>
