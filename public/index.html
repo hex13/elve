@@ -1,17 +1,34 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            background: black;
+        }
+    </style>
+</head>
 <body>
     <canvas id="game" width="1024" height="1024"></canvas>
     <script type="module">
-        import initElve from './pkg/elve.js';
+        const count = 10000;
+        const componentsPerVertex = 2;
 
-        initElve().then(api => {
-            console.log("API", api);
-            init();
+        import initElve, {ParticleSystem as App} from './pkg/elve.js';
+
+        let wasmPositions, colors;
+
+        initElve().then(engine => {
+            console.log("engine", engine);
+            const app = new App(count);
+            const positions = app.positions();
+            const buff = new Float32Array(engine.memory.buffer, positions, count * componentsPerVertex);
+            wasmPositions = buff;
+            colors = new Float32Array(engine.memory.buffer, app.colors(), count * 4);
+            init(app);
         });
 
 
-        function init() {
+        function init(app) {
             function check({shader, program} = {}) {
             const err = gl.getError();
             if (err) console.log("ERR",err);
@@ -27,19 +44,30 @@
         const shaderSources = {
             VERTEX_SHADER: `
             attribute vec2 aPosition;
+            attribute vec4 aColor;
+            varying highp vec4 color;
             void main() {
                 gl_Position = vec4(aPosition, 0.0, 1.0);
-                gl_PointSize = 4.;
+                // gl_PointSize = 2.0 - aColor.a * 2.0 + 2.5;
+                float brightness = aColor.r + aColor.g + aColor.b + aColor.b;
+                gl_PointSize = 2.0;
+                color = aColor;
             }
             `,
             FRAGMENT_SHADER:  `
+            varying highp vec4 color;
             void main() {
-                gl_FragColor = vec4(1.0, 1.0, 0.0, 0.2);
+                gl_FragColor = color;
             }
             `,
         };
         const canvas = document.getElementById('game');
-        const gl = canvas.getContext('webgl2');
+        const gl = canvas.getContext('webgl2', {
+            premultipliedAlpha: false, 
+            alpha: true,
+            antialias: true,
+            preserveDrawingBuffer: true,
+        });
 
         const shaders = Object.fromEntries(Object.entries(shaderSources).map(([k, source]) => {
             const shader = gl.createShader(gl[k]);
@@ -52,7 +80,7 @@
         }));
 
         gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, 1.0);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         const program = gl.createProgram();
         check({program});
         gl.attachShader(program, shaders.fragment);
@@ -65,53 +93,20 @@
 
 
         const buffer = gl.createBuffer();
+        const colorBuffer = gl.createBuffer();
         check({program});
         gl.useProgram(program);
         check({program});
 
 
-        const count = 1300;
-        const componentsPerVertex = 2;
         const velocities = new Float32Array(count * componentsPerVertex);
         const particles =  new Float32Array(count * componentsPerVertex);
         let center;
-        function randomize(i) {
-            
-            let angle = Math.random() * Math.PI * 2;
-            
-            let speed = Math.random() * 0.0056;
-
-            velocities[i * componentsPerVertex] = center.x + speed * Math.cos(angle) + Math.sin(angle * 0.2 * speed) * 0.01;
-            velocities[i * componentsPerVertex + 1] = center.y + speed * Math.sin(angle) + Math.cos(angle) * 0.04 + 0.14;
-
-            {
-                let angle = Math.random() * Math.PI * 2;
-                let speed = Math.random() * 0.01 + 0.04;
-                particles[i * componentsPerVertex] = speed * Math.cos(angle);
-                particles[i * componentsPerVertex + 1] = -0.5 + speed * Math.sin(angle);
-
-            }
-        }
-        for (let i = 0; i < count; i++) {
-            let angle = Math.random() * Math.PI * 2;
-            
-            let speed = Math.random() * 0.0056;
-
-            velocities[i * componentsPerVertex] = speed * Math.cos(angle) + Math.sin(angle * 0.2 * speed) * 0.01;
-            velocities[i * componentsPerVertex + 1] = speed * Math.sin(angle) + Math.cos(angle) * 0.01 + 0.02;
-
-            {
-                let angle = Math.random() * Math.PI * 2;
-                let speed = Math.random() * 0.01 + 0.04;
-                particles[i * componentsPerVertex] = speed * Math.cos(angle);
-                particles[i * componentsPerVertex + 1] = -0.5 + speed * Math.sin(angle);
-
-            }
-
-        }
         function render() {
-            gl.clearColor(0.1, 0.0, 0.1, 1.0);
+            const particles = wasmPositions;
+            gl.clearColor(0.0, 0.0, 0.0, 0.5);
             gl.clear(gl.COLOR_BUFFER_BIT);
+
 
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
             gl.bufferData(gl.ARRAY_BUFFER, particles, gl.DYNAMIC_DRAW);
@@ -120,38 +115,27 @@
             gl.vertexAttribPointer(aPosition, componentsPerVertex, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(aPosition);
 
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, colors, gl.DYNAMIC_DRAW);
+
+            const aColor = gl.getAttribLocation(program, 'aColor');
+
+            gl.vertexAttribPointer(aColor, 4 /*rgba*/, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(aColor);
+
+
             gl.drawArrays(gl.POINTS, 0, count);
 
         }
         
         let angle = 0.0;
+        app.create_explosion();
         (function update() {
-            for (let i = 0; i < count; i++) {
-                const idx = i * componentsPerVertex;
-
-                const speed = 0.4;
-                particles[idx] += velocities[idx] * speed;
-                particles[idx + 1] += velocities[idx + 1] * speed;
-                velocities[idx + 1] -= 0.00029;
-
-
-            }
-            {
-                center = {x: (Math.random() - 0.5) * 0.1, y: (Math.random() - 0.5) * 0.1};
-                for (let i = 0; i < 100; i++) {
-                    const rnd = ~~(Math.random() * count);
-                    randomize(rnd);
-
-                }
-
-            }
-            angle += 0.1;
-            particles[0] = Math.cos(angle);
+            app.update();
             render();
             requestAnimationFrame(update);
         })();
-        
-
 
         }
 
