@@ -10,7 +10,7 @@
 <body>
     <canvas id="game" width="1024" height="1024"></canvas>
     <script type="module">
-        const count = 10000;
+        const count = 3000;
         const componentsPerVertex = 2;
 
         import initElve, {ParticleSystem as App} from './pkg/elve.js';
@@ -43,22 +43,125 @@
         }
         const shaderSources = {
             VERTEX_SHADER: `
+            precision highp float;
             attribute vec2 aPosition;
             attribute vec4 aColor;
             varying highp vec4 color;
+            varying highp vec2 position;
+            uniform highp int pass;
             void main() {
                 gl_Position = vec4(aPosition, 0.0, 1.0);
+                position = aPosition;
                 // gl_PointSize = 2.0 - aColor.a * 2.0 + 2.5;
-                float brightness = aColor.r + aColor.g + aColor.b + aColor.b;
-                gl_PointSize = 2.0;
+                float brightness = aColor.a;
+                gl_PointSize = 3.5 * brightness;//pass == 0? (brightness*brightness) * 3.0 + 1.0 : 1.0;
+                // gl_PointSize = sqrt(brightness) * 2.0 + 2.0;
                 color = aColor;
             }
             `,
             FRAGMENT_SHADER:  `
+            precision highp float;
+            uniform sampler2D screen;
+            uniform sampler2D prevScreen;
+            uniform highp int pass;
             varying highp vec4 color;
+            varying highp vec2 position;
+            #define kernelSize 3
             void main() {
-                gl_FragColor = color;
+                float a = 0.0002;
+                vec2 texPos = vec2((position.x + 1.0) / 2.0, (position.y + 1.0) / 2.0);
+
+                if (pass == 0) {
+                    gl_FragColor = color;
+                } else if (pass == 1) {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.36);
+                    // gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                    return;
+                    vec4 prevPixel = texture2D(prevScreen, texPos);
+                    vec4 currPixel = texture2D(screen, texPos);
+                    {
+                    
+                    vec4 p = texture2D(screen, texPos + vec2(a, 0.0))
+                         + texture2D(screen, texPos - vec2(a, 0.0))
+                         + texture2D(screen, texPos + vec2(0.0, a))
+                         + texture2D(screen, texPos - vec2(0.0, a));
+                    p /= 2.0;
+                    float prevBrightness = (p.r + p.g + p.b) * p.a;
+                    float currBrightness = (currPixel.r + currPixel.g + currPixel.b) * currPixel.a;
+                    if (prevBrightness > currBrightness)
+                        currPixel = p;
+                    }
+
+                    float prevBrightness = (prevPixel.r + prevPixel.g + prevPixel.b) * prevPixel.a;
+                    float currBrightness = (currPixel.r + currPixel.g + currPixel.b) * currPixel.a;
+                    if (currBrightness > prevBrightness) {
+                        gl_FragColor = currPixel;
+                    } else {
+                        gl_FragColor = mix(prevPixel, currPixel, 0.2);
+                        // gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+
+                    }
+                    
+                    // gl_FragColor = mix(
+                    //     texture2D(screen, texPos),
+                    //     vec4(0.0, 1.0, 0.0, 1.0),
+                    //     0.5
+                    // );
+                    
+                    // gl_FragColor = mix(color, texture2D(screen, texPos), 0.4);
+                } else {
+                    float a = 0.0028;
+                    vec4 neighbors;
+                    vec4 current = texture2D(screen, texPos);
+
+
+                    int count = 0;
+                    
+                    for (int y = -kernelSize; y <= kernelSize; y++) {
+                        for (int x = -kernelSize; x <= kernelSize; x++) {
+                            // float influence = length(vec2(kernelSize, kernelSize)) - length(vec2(x, y));
+                            neighbors += texture2D(screen, texPos + vec2(a * float(x), a * float(y)));// * influence * 0.3;
+                            
+                            if (x == 0 && y == 0) {
+                                neighbors += texture2D(screen, texPos + vec2(a * float(x), a * float(y)));
+                                count++;
+                            }
+                            count++;
+                        }
+                        
+                    }
+
+
+                    // neighbors += 2.0 * texture2D(screen, texPos);
+
+                    neighbors /= float(count);
+                    float neighborBrightness = (neighbors.r + neighbors.g + neighbors.b) * neighbors.a;
+                    float currentBrightness = (current.r + current.g + current.b) * current.a;
+                    float factor = 3.2;
+                    if (currentBrightness > neighborBrightness) {
+                        gl_FragColor = mix(current * factor, neighbors * factor, 0.4);
+                    } else {
+                        gl_FragColor = neighbors * factor;//mix(neighbors / 3.0, current, 0.1);//texture2D(screen, texPos);
+                        
+                    }
+                    // gl_FragColor = neighbors * 4.9;
+                    
+                }
+
             }
+            `,
+        };
+        // TODO shader
+        const postprocessingShaderSources = {
+            VERTEX_SHADER: ``,
+            FRAGMENT_SHADER: `
+                precision highp float;
+                uniform sampler2D prevScreen;
+                uniform sampler2D screen;
+                void main() {
+                    vec2 texPos = TODO;!!!!!
+                    gl_FragColor = mix(texture2D(prevScreen, texPos), texture2D(screen, texPos), 0.5);
+                }
             `,
         };
         const canvas = document.getElementById('game');
@@ -94,18 +197,80 @@
 
         const buffer = gl.createBuffer();
         const colorBuffer = gl.createBuffer();
+
+        const quad = (() => {
+            const buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                -1.0, -1.0,
+                1.0, -1.0,
+                1.0, 1.0,
+                1.0, 1.0,
+                -1.0, 1.0,
+                -1.0, -1.0,
+            ]), gl.DYNAMIC_DRAW);
+            return {buffer};
+        })();
+
         check({program});
         gl.useProgram(program);
         check({program});
+
+        function createTexture(width, height) {
+            const texture = gl.createTexture();
+            check();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            check();
+            const arr = new Uint8Array(Array.from(new Array(width * height * 4), x => 200));
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            check();
+            return texture;
+        }
+
+        let texture = createTexture(canvas.width, canvas.height);
+        let prevTexture = createTexture(canvas.width, canvas.height);
+        let nextTexture = createTexture(canvas.width, canvas.height);
+        let tmpTexture = createTexture(canvas.width, canvas.height);
+        const textureFramebuffer = gl.createFramebuffer();
+        check();
+
 
 
         const velocities = new Float32Array(count * componentsPerVertex);
         const particles =  new Float32Array(count * componentsPerVertex);
         let center;
+        function renderQuad() {
+            gl.uniform1i(uniforms.screen, 0);
+            gl.uniform1i(uniforms.prevScreen, 1);
+
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, quad.buffer);
+
+
+            const aPosition = gl.getAttribLocation(program, 'aPosition');
+            gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(aPosition);
+
+            
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        }
         function render() {
+            // gl.bindFramebuffer(gl.FRAMEBUFFER, textureFramebuffer);
+            // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+
+
             const particles = wasmPositions;
-            gl.clearColor(0.0, 0.0, 0.0, 0.5);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            // gl.clearColor(0.0, 0.0, 0.0, 0.5);
+            // gl.clear(gl.COLOR_BUFFER_BIT);
 
 
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -127,14 +292,50 @@
 
             gl.drawArrays(gl.POINTS, 0, count);
 
+            
+
         }
         
         let angle = 0.0;
         app.create_explosion();
+
+        const passLocation = gl.getUniformLocation(program, 'pass');
+        const uniforms = {
+            screen: gl.getUniformLocation(program, 'screen'),
+            prevScreen: gl.getUniformLocation(program, 'prevScreen'),
+        };
+
+        console.log(uniforms);
         (function update() {
             app.update();
+
+            // prevTexture = nextTexture;
+            gl.bindFramebuffer(gl.FRAMEBUFFER, textureFramebuffer);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+
+            gl.uniform1i(passLocation, 1);
+
+            renderQuad();
+            
+            gl.uniform1i(passLocation, 0);
+
             render();
+
+            gl.uniform1i(passLocation, 2);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            
+
+            renderQuad();
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+
             requestAnimationFrame(update);
+            
         })();
 
         }

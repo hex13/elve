@@ -35,17 +35,41 @@ struct Particle {
 }
 
 impl Particle {
-    fn new(center: &Vector2, color: &Color, speed_factor: f32) -> Particle {
-        let speed = rand::random::<f32>() * speed_factor;
+    fn new(center: &Vector2, color: &Color, speed_factor: f32, kind: u8) -> Particle {
+        let speed = rand::random::<f32>() * speed_factor + 0.0002;
         let angle = rand::random::<f32>() * 2. * PI;
         let mut _color = color.clone();
-        _color[3] -= rand::random::<f32>() * 0.5;
+        _color[3] -= rand::random::<f32>() * 0.1;
+        let velocity;
+        let position;
+        if kind == 1 {
+            velocity = [angle.cos() * speed * 0.1, angle.sin() * speed * 0.2 + 0.024];
+            position = center.clone();
+        } else if kind == 2 {
+            let angle2 = ((angle * 3.0) as i32) as f32;
+            velocity = [angle2.cos() * speed, angle2.sin() * speed + 0.01];
+            position = [
+                center[0] + rand::random::<f32>() * 0.016 - 0.008, 
+                center[1] + rand::random::<f32>() * 0.016 - 0.008, 
+            ];
+        } else if kind == 3 {
+            // velocity = [angle.cos() * rand::random::<f32>() * 0.01, 0.02 + rand::random::<f32>() * 0.01];
+            velocity = [0.01 * angle.cos() * angle, 0.01 * angle.sin() * angle];
+            position = [
+                center[0] + rand::random::<f32>() * 0.016 - 0.008, 
+                center[1] + rand::random::<f32>() * 0.016 - 0.008, 
+            ];
+
+        } else {
+            velocity = [angle.cos() * speed, angle.sin() * speed + 0.01];
+            position = [
+                center[0] + rand::random::<f32>() * 0.010 - 0.005, 
+                center[1] + rand::random::<f32>() * 0.010 - 0.005, 
+            ];
+        }
         Particle { 
-            position: [
-                center[0] + rand::random::<f32>() * 0.022 - 0.011, 
-                center[1] + rand::random::<f32>() * 0.022 - 0.011, 
-            ],
-            velocity: [angle.cos() * speed, angle.sin() * speed + 0.01],
+            position,
+            velocity,
             color: _color,
         }
     }
@@ -72,20 +96,24 @@ impl ParticleSystem {
         &self.colors[0]
     }
     pub fn create_explosion(&mut self) {
+        let mut color = rgba(
+            rand::random::<f32>() * 0.5 + 0.5,
+            rand::random::<f32>() * 0.5 + 0.5,
+            rand::random::<f32>() * 0.5 + 0.5,
+            1.0
+        );
+        let component = (rand::random::<f32>() * 3.0) as usize;
+        color[component] = 1.0;
         let explosion = Explosion {
             center: [rand::random::<f32>() * 1.0 - 0.5, rand::random::<f32>() * 1.0 - 0.75],
-            color: rgba(
-                rand::random::<f32>() * 0.4 + 0.6,
-                rand::random::<f32>() * 0.4 + 0.6,
-                rand::random::<f32>() * 0.4 + 0.6,
-                1.0
-            ),
-            ttl: (rand::random::<f32>() * 10.0) as u32 + 5,
+            color,
+            ttl: (rand::random::<f32>() * 20.0) as u32 + 3,
         };
         self.explosions.push(explosion);
     }
     pub fn reinitialize_particles(&mut self) {
-        let speed_factor = rand::random::<f32>() * 0.02 + 0.004;
+        let speed_factor = rand::random::<f32>() * 0.023 + 0.002;
+        let kind = (rand::random::<f32>() * 6.0) as u8;
         for i in 0..self.count {
             let rnd = (rand::random::<f32>() * self.explosions.len() as f32) as usize;
             let explosion = &self.explosions[rnd];
@@ -94,7 +122,8 @@ impl ParticleSystem {
             
             
             if self.colors[i * 4 + 3] < 0.1 {
-                let particle = Particle::new(&explosion.center, &explosion.color, speed_factor);
+
+                let particle = Particle::new(&explosion.center, &explosion.color, speed_factor, kind);
                 self.positions.splice(i * 2..i * 2 + 2, particle.position);
                 self.velocities.splice(i * 2..i * 2 + 2, particle.velocity);
                 self.colors.splice(i * 4..i * 4 + 4, particle.color);
@@ -120,15 +149,14 @@ impl ParticleSystem {
             let color = self.colors[idx + 3];
             // let new_color;
             if color > 0.9 {
-                self.colors[idx + 3] *= 0.999; 
-                self.velocities[i * 2 + 1] += rand::random::<f32>() * 0.0001; // nice pseudo-3d effect
-                self.velocities[i * 2 + 0] += rand::random::<f32>() * 0.0002 - 0.0001; // nice pseudo-3d effect
+                self.colors[idx + 3] *= 0.9988; 
+                // self.velocities[i * 2 + 1] += rand::random::<f32>() * 0.0001; // nice pseudo-3d effect
+                // self.velocities[i * 2 + 0] += rand::random::<f32>() * 0.0004 - 0.0002; // nice pseudo-3d effect
 
-            } else if self.colors[idx + 3] > 0.7 {
-                self.colors[idx + 3] *= 0.99; 
+            } else if self.colors[idx + 3] > 0.8 {
+                self.colors[idx + 3] *= 0.993; 
             } else {
-
-                if rand::random::<f32>() < 0.006 {
+                if rand::random::<f32>() < 0.02 {
                     self.colors[idx + 3] = 0.6;
                 } else {
                     self.colors[idx + 3] *= 0.92; 
