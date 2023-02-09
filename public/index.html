@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
             background: black;
             color: #eee;
             font-family: Helvetica, sans-serif;
+            margin: 0;
         }
         canvas {
-            border: 1px solid blue;
+            outline: 1px solid #222;
+            width: 100vmin;
         }
     </style>
 </head>
@@ -17,7 +20,6 @@
     <br>
     <canvas id="game" width="1024" height="1024"></canvas>
     <script type="module">
-
         const count = 3000;
         const componentsPerVertex = 2;
 
@@ -176,8 +178,15 @@
         const canvas = document.getElementById('game');
 
         canvas.addEventListener('click', e => {
-            const x = (e.clientX / canvas.width) * 2.0 - 1.0;
-            const y = -((e.clientY / canvas.height) * 2.0 - 1.0);
+            const bounds = e.target.getBoundingClientRect();
+            const canvasX = e.clientX - bounds.left;
+            const canvasY = e.clientY - bounds.top;
+
+            const x = (canvasX / bounds.width) * 2.0 - 1.0;
+            const y = -((canvasY / bounds.height) * 2.0 - 1.0);
+            console.log(canvasX, canvasY)
+            console.log(x, y)
+
             const res = controller.dispatch(app, 0, x, y);
         });
 
