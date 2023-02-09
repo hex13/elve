@@ -176,8 +176,7 @@
             `,
         };
         const canvas = document.getElementById('game');
-
-        canvas.addEventListener('click', e => {
+        canvas.addEventListener('pointerdown', e => {
             const bounds = e.target.getBoundingClientRect();
             const canvasX = e.clientX - bounds.left;
             const canvasY = e.clientY - bounds.top;
@@ -187,8 +186,33 @@
             console.log(canvasX, canvasY)
             console.log(x, y)
 
-            const res = controller.dispatch(app, 0, x, y);
+            const res = controller.dispatch(app, 1, x, y);
         });
+
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+        });
+
+        canvas.addEventListener('pointermove', e => {
+            const bounds = e.target.getBoundingClientRect();
+            const canvasX = e.clientX - bounds.left;
+            const canvasY = e.clientY - bounds.top;
+
+            const x = (canvasX / bounds.width) * 2.0 - 1.0;
+            const y = -((canvasY / bounds.height) * 2.0 - 1.0);
+            const res = controller.dispatch(app, 2, x, y);
+        });
+
+        canvas.addEventListener('pointerup', e => {
+            const bounds = e.target.getBoundingClientRect();
+            const canvasX = e.clientX - bounds.left;
+            const canvasY = e.clientY - bounds.top;
+
+            const x = (canvasX / bounds.width) * 2.0 - 1.0;
+            const y = -((canvasY / bounds.height) * 2.0 - 1.0);
+            const res = controller.dispatch(app, 3, x, y);
+        });
+
 
         const gl = canvas.getContext('webgl2', {
             premultipliedAlpha: false, 
