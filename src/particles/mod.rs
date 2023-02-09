@@ -25,7 +25,8 @@ pub struct ParticleSystem {
     positions: Vec<f32>,
     velocities: Vec<f32>,
     colors: Vec<f32>,
-    explosions: Vec<Explosion>
+    explosions: Vec<Explosion>,
+    autoexplosions: bool,
 }
 
 struct Particle {
@@ -87,7 +88,7 @@ impl ParticleSystem {
         velocities.resize(count * 2, 0.0);
         colors.resize(count * 4, 0.0);
         let explosions = Vec::new();
-        ParticleSystem { count, positions, velocities, colors, explosions }
+        ParticleSystem { count, positions, velocities, colors, explosions, autoexplosions: false }
     }
     pub fn positions(&self) -> *const f32 {
         &self.positions[0]
@@ -95,6 +96,31 @@ impl ParticleSystem {
     pub fn colors(&self) -> *const f32 {
         &self.colors[0]
     }
+    pub fn set_autoexplosions(&mut self, value: bool) {
+        self.autoexplosions = value;
+    }
+    // TODO remove duplication
+    pub fn create_explosion_at(&mut self, x: f32, y: f32) {
+        
+        let mut color = rgba(
+            rand::random::<f32>() * 0.5 + 0.5,
+            rand::random::<f32>() * 0.5 + 0.5,
+            rand::random::<f32>() * 0.5 + 0.5,
+            1.0
+        );
+        let component = (rand::random::<f32>() * 3.0) as usize;
+        color[component] = 1.0;
+        let explosion = Explosion {
+            center: [x, y],
+            color,
+            ttl: 100,
+        };
+        self.explosions.clear();
+
+        self.explosions.push(explosion);
+        self.reinitialize_particles();
+    }
+    // TODO remove duplication
     pub fn create_explosion(&mut self) {
         let mut color = rgba(
             rand::random::<f32>() * 0.5 + 0.5,
@@ -107,7 +133,7 @@ impl ParticleSystem {
         let explosion = Explosion {
             center: [rand::random::<f32>() * 1.0 - 0.5, rand::random::<f32>() * 1.0 - 0.75],
             color,
-            ttl: (rand::random::<f32>() * 20.0) as u32 + 3,
+            ttl: 1,
         };
         self.explosions.push(explosion);
     }
@@ -173,7 +199,7 @@ impl ParticleSystem {
         if self.explosions.len() == 0  {
             self.create_explosion();
         }
-        if rand::random::<f32>() < 0.03 {
+        if self.autoexplosions && rand::random::<f32>() < 0.03 {
             self.reinitialize_particles();
         }
 
