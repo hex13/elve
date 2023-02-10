@@ -81,12 +81,9 @@ impl ParticleSystem {
     #[wasm_bindgen(constructor)]
     pub fn new(count: usize) -> ParticleSystem {
         let unit = 0.2;
-        let mut positions: Vec<f32> = Vec::new();
-        let mut velocities: Vec<f32> = Vec::new();
-        let mut colors: Vec<f32> = Vec::new();
-        positions.resize(count * 2, 0.0);
-        velocities.resize(count * 2, 0.0);
-        colors.resize(count * 4, 0.0);
+        let positions = vec![0.0; count * 2];
+        let velocities = vec![0.0; count * 2];
+        let colors = vec![0.0; count * 4];
         let explosions = Vec::new();
         ParticleSystem { count, positions, velocities, colors, explosions, autoexplosions: false }
     }
