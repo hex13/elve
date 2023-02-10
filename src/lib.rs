@@ -48,7 +48,7 @@ pub enum Resource {
 #[wasm_bindgen]
 pub struct App {
     resources: Vec<Resource>,
-    particle_system: particles::ParticleSystem,
+    particle_system_state: particles::ParticleSystemState,
 }
 
 #[wasm_bindgen]
@@ -70,38 +70,39 @@ impl App {
     //     }
     // }
     
-    pub fn particle_system(&mut self ) -> *const particles::ParticleSystem {
-        &self.particle_system
-    }
     pub fn positions(&self) -> *const f32 {
-        self.particle_system.positions()
+        &self.particle_system_state.positions[0]
     }
     pub fn colors(&self) -> *const f32 {
-        self.particle_system.colors()
-    }
-    pub fn create_explosion(&mut self) {
-        self.particle_system.create_explosion()
+        &self.particle_system_state.colors[0]
     }
     pub fn update(&mut self) {
-        self.particle_system.update()
+        particles::ParticleSystem::update(&mut self.particle_system_state)
     }
     pub fn set_autoexplosions(&mut self, value: bool) {
-        self.particle_system.set_autoexplosions(value)
+        self.particle_system_state.autoexplosions = value;
     }
     pub fn create_explosion_at(&mut self, x: f32, y: f32) {
-        self.particle_system.create_explosion_at(x, y)
+        particles::ParticleSystem::create_explosion_at(&mut self.particle_system_state, x, y)
     }
 }
 
 
 #[wasm_bindgen]
 pub fn create_fireworks_app(count: usize) -> App {
-    let particle_system = particles::ParticleSystem::new(count);
+
+    let unit = 0.2;
+    let positions = vec![0.0; count * 2];
+    let velocities = vec![0.0; count * 2];
+    let colors = vec![0.0; count * 4];
+    let explosions = Vec::new();
+    let particle_system_state = particles::ParticleSystemState { count, positions, velocities, colors, explosions, autoexplosions: false };
+
     let resources: Vec<Resource> = vec![
         // Resource::ParticleSystem(particle_system)
     ];
     App {
         resources,
-        particle_system,
+        particle_system_state,
     }
 }

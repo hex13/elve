@@ -9,7 +9,8 @@ type Color = Vector4;
 fn rgba(r: f32, g: f32, b: f32, a: f32) -> Color {
     [r, g, b, a]
 }
-struct Explosion {
+
+pub struct Explosion {
     center: Vector2,
     color: Color,
     ttl: u32,
@@ -19,14 +20,18 @@ impl Explosion {
     
 }
 
-#[wasm_bindgen]
+pub struct ParticleSystemState {
+    pub count: usize,
+    pub positions: Vec<f32>,
+    pub velocities: Vec<f32>,
+    pub colors: Vec<f32>,
+    pub explosions: Vec<Explosion>,
+    pub autoexplosions: bool,
+}
+
+
 pub struct ParticleSystem {
-    count: usize,
-    positions: Vec<f32>,
-    velocities: Vec<f32>,
-    colors: Vec<f32>,
-    explosions: Vec<Explosion>,
-    autoexplosions: bool,
+    pub state: ParticleSystemState,
 }
 
 struct Particle {
@@ -64,8 +69,8 @@ impl Particle {
         } else {
             velocity = [angle.cos() * speed, angle.sin() * speed + 0.01];
             position = [
-                center[0] + rand::random::<f32>() * 0.010 - 0.005, 
-                center[1] + rand::random::<f32>() * 0.010 - 0.005, 
+                center[0] + rand::random::<f32>() * 0.010 - 0.005,
+                center[1] + rand::random::<f32>() * 0.010 - 0.005,
             ];
         }
         Particle { 
@@ -76,29 +81,9 @@ impl Particle {
     }
 }
 
-#[wasm_bindgen]
 impl ParticleSystem {
-    #[wasm_bindgen(constructor)]
-    pub fn new(count: usize) -> ParticleSystem {
-        let unit = 0.2;
-        let positions = vec![0.0; count * 2];
-        let velocities = vec![0.0; count * 2];
-        let colors = vec![0.0; count * 4];
-        let explosions = Vec::new();
-        ParticleSystem { count, positions, velocities, colors, explosions, autoexplosions: false }
-    }
-    pub fn positions(&self) -> *const f32 {
-        &self.positions[0]
-    }
-    pub fn colors(&self) -> *const f32 {
-        &self.colors[0]
-    }
-    pub fn set_autoexplosions(&mut self, value: bool) {
-        self.autoexplosions = value;
-    }
     // TODO remove duplication
-    pub fn create_explosion_at(&mut self, x: f32, y: f32) {
-        
+    pub fn create_explosion_at(state: &mut ParticleSystemState, x: f32, y: f32) {
         let mut color = rgba(
             rand::random::<f32>() * 0.5 + 0.5,
             rand::random::<f32>() * 0.5 + 0.5,
@@ -112,13 +97,13 @@ impl ParticleSystem {
             color,
             ttl: 100,
         };
-        self.explosions.clear();
+        state.explosions.clear();
 
-        self.explosions.push(explosion);
-        self.reinitialize_particles();
+        state.explosions.push(explosion);
+        ParticleSystem::reinitialize_particles(state);
     }
     // TODO remove duplication
-    pub fn create_explosion(&mut self) {
+    fn create_explosion(state: &mut ParticleSystemState) {
         let mut color = rgba(
             rand::random::<f32>() * 0.5 + 0.5,
             rand::random::<f32>() * 0.5 + 0.5,
@@ -132,34 +117,31 @@ impl ParticleSystem {
             color,
             ttl: 1,
         };
-        self.explosions.push(explosion);
+        state.explosions.push(explosion);
     }
-    pub fn reinitialize_particles(&mut self) {
+    fn reinitialize_particles(state: &mut ParticleSystemState) {
         let speed_factor = rand::random::<f32>() * 0.023 + 0.002;
         let kind = (rand::random::<f32>() * 6.0) as u8;
-        for i in 0..self.count {
-            let rnd = (rand::random::<f32>() * self.explosions.len() as f32) as usize;
-            let explosion = &self.explosions[rnd];
-            let x = self.positions[i * 2];
-            let y = self.positions[i * 2 + 1];
+        for i in 0..state.count {
+            let rnd = (rand::random::<f32>() * state.explosions.len() as f32) as usize;
+            let explosion = &state.explosions[rnd];
+            let x = state.positions[i * 2];
+            let y = state.positions[i * 2 + 1];
             
             
-            if self.colors[i * 4 + 3] < 0.1 {
+            if state.colors[i * 4 + 3] < 0.1 {
 
                 let particle = Particle::new(&explosion.center, &explosion.color, speed_factor, kind);
-                self.positions.splice(i * 2..i * 2 + 2, particle.position);
-                self.velocities.splice(i * 2..i * 2 + 2, particle.velocity);
-                self.colors.splice(i * 4..i * 4 + 4, particle.color);
+                state.positions.splice(i * 2..i * 2 + 2, particle.position);
+                state.velocities.splice(i * 2..i * 2 + 2, particle.velocity);
+                state.colors.splice(i * 4..i * 4 + 4, particle.color);
             }
         }
     }
-    pub fn debug(&mut self) -> usize {
-        self.explosions.len()
-    }
-    pub fn update(&mut self) {
+    pub fn update(state: &mut ParticleSystemState) {
         let mut is_y = false;
 
-        for (pos, vel) in self.positions.iter_mut().zip(self.velocities.iter_mut()) {
+        for (pos, vel) in state.positions.iter_mut().zip(state.velocities.iter_mut()) {
             *pos += *vel;
             if is_y {
                 *vel += gravity;
@@ -167,37 +149,34 @@ impl ParticleSystem {
             is_y = !is_y;
         }
 
-        for i in 0..self.count {
+        for i in 0..state.count {
             let idx = i * 4;
-            let color = self.colors[idx + 3];
+            let color = state.colors[idx + 3];
             // let new_color;
             if color > 0.9 {
-                self.colors[idx + 3] *= 0.9988; 
-                // self.velocities[i * 2 + 1] += rand::random::<f32>() * 0.0001; // nice pseudo-3d effect
-                // self.velocities[i * 2 + 0] += rand::random::<f32>() * 0.0004 - 0.0002; // nice pseudo-3d effect
-
-            } else if self.colors[idx + 3] > 0.8 {
-                self.colors[idx + 3] *= 0.993; 
+                state.colors[idx + 3] *= 0.9988; 
+            } else if state.colors[idx + 3] > 0.8 {
+                state.colors[idx + 3] *= 0.993; 
             } else {
                 if rand::random::<f32>() < 0.02 {
-                    self.colors[idx + 3] = 0.6;
+                    state.colors[idx + 3] = 0.6;
                 } else {
-                    self.colors[idx + 3] *= 0.92; 
+                    state.colors[idx + 3] *= 0.92; 
                 }
                 
             }
             
         }
 
-        self.explosions.retain_mut(|explosion| {
+        state.explosions.retain_mut(|explosion| {
             explosion.ttl -= 1;
             return explosion.ttl > 0;
         });
-        if self.explosions.len() == 0  {
-            self.create_explosion();
+        if state.explosions.len() == 0  {
+            ParticleSystem::create_explosion(state);
         }
-        if self.autoexplosions && rand::random::<f32>() < 0.03 {
-            self.reinitialize_particles();
+        if state.autoexplosions && rand::random::<f32>() < 0.03 {
+            ParticleSystem::reinitialize_particles(state);
         }
 
     }
