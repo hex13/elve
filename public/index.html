@@ -29,6 +29,12 @@
         let wasmPositions, colors;
         let controller;
         let drawingEditor;
+        const pointers = {};
+        window.pass_firework_buffers = function (positions, colors) {
+            pointers.positions = positions;
+            pointers.colors = colors;
+        }
+
         initElve().then(engine => {
             const width = 1024;
             const height = 1024;
@@ -46,14 +52,16 @@
 
             controller = new FireworksController();
             drawingEditor = new DrawingEditor(width, height);
-            const positions = app.positions();
-            const buff = new Float32Array(engine.memory.buffer, positions, count * componentsPerVertex);
-            wasmPositions = buff;
-            colors = new Float32Array(engine.memory.buffer, app.colors(), count * 4);
             drawingEditor.pixelData = new Uint8Array(engine.memory.buffer, drawingEditor.pixels(), width * height * 4);
             console.log("pixeldata", drawingEditor.pixelData)
             drawingEditor.width = width;
             drawingEditor.height = height;
+
+            const buff = new Float32Array(engine.memory.buffer, pointers.positions, count * componentsPerVertex);
+            wasmPositions = buff;
+
+            colors = new Float32Array(engine.memory.buffer, pointers.colors, count * 4);
+
             init(app);
         });
 

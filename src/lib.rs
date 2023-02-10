@@ -15,6 +15,12 @@ pub struct FireworksController {
 }
 
 #[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace=window)]
+    pub fn pass_firework_buffers(positions: *const f32, colors: *const f32 );
+}
+
+#[wasm_bindgen]
 impl FireworksController {
     #[wasm_bindgen(constructor)]
     pub fn new() -> FireworksController {
@@ -69,13 +75,6 @@ impl App {
     //         _ => 0
     //     }
     // }
-    
-    pub fn positions(&self) -> *const f32 {
-        &self.particle_system_state.positions[0]
-    }
-    pub fn colors(&self) -> *const f32 {
-        &self.particle_system_state.colors[0]
-    }
     pub fn update(&mut self) {
         particles::ParticleSystem::update(&mut self.particle_system_state)
     }
@@ -101,6 +100,7 @@ pub fn create_fireworks_app(count: usize) -> App {
     let resources: Vec<Resource> = vec![
         // Resource::ParticleSystem(particle_system)
     ];
+    pass_firework_buffers(&particle_system_state.positions[0], &particle_system_state.colors[0]);
     App {
         resources,
         particle_system_state,

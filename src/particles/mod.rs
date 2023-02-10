@@ -16,10 +16,6 @@ pub struct Explosion {
     ttl: u32,
 }
 
-impl Explosion {
-    
-}
-
 pub struct ParticleSystemState {
     pub count: usize,
     pub positions: Vec<f32>,
