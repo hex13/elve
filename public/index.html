@@ -23,13 +23,12 @@
         const count = 3000;
         const componentsPerVertex = 2;
 
-        import initElve, {FireworksController, DrawingEditor} from './pkg/elve.js';
+        import initElve, {FireworksController, DrawingEditor, create_fireworks_app} from './pkg/elve.js';
 
         let wasmPositions, colors;
         let controller;
         let drawingEditor;
         initElve().then(engine => {
-            const app = new ParticleSystem(count);
             const width = 1024;
             const height = 1024;
 
@@ -42,6 +41,7 @@
             }
             check();
 
+            const app = create_fireworks_app(count);
 
             controller = new FireworksController();
             drawingEditor = new DrawingEditor(width, height);
