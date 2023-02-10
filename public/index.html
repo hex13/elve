@@ -23,18 +23,36 @@
         const count = 3000;
         const componentsPerVertex = 2;
 
-        import initElve, {ParticleSystem, FireworksController} from './pkg/elve.js';
+        import initElve, {FireworksController, DrawingEditor} from './pkg/elve.js';
 
         let wasmPositions, colors;
         let controller;
+        let drawingEditor;
         initElve().then(engine => {
-            console.log("engine", engine);
             const app = new ParticleSystem(count);
+            const width = 1024;
+            const height = 1024;
+
+            let c=0;
+            let lastLength = 0;
+            const check = () => {
+                if (engine.memory.buffer.byteLength > lastLength) console.log("grown!")
+                console.log("engine " + (++c) , engine.memory.buffer.byteLength);
+                lastLength = engine.memory.buffer.byteLength;
+            }
+            check();
+
+
             controller = new FireworksController();
+            drawingEditor = new DrawingEditor(width, height);
             const positions = app.positions();
             const buff = new Float32Array(engine.memory.buffer, positions, count * componentsPerVertex);
             wasmPositions = buff;
             colors = new Float32Array(engine.memory.buffer, app.colors(), count * 4);
+            drawingEditor.pixelData = new Uint8Array(engine.memory.buffer, drawingEditor.pixels(), width * height * 4);
+            console.log("pixeldata", drawingEditor.pixelData)
+            drawingEditor.width = width;
+            drawingEditor.height = height;
             init(app);
         });
 
@@ -200,6 +218,10 @@
 
             const x = (canvasX / bounds.width) * 2.0 - 1.0;
             const y = -((canvasY / bounds.height) * 2.0 - 1.0);
+
+            const scaleX = bounds.width / drawingEditor.width;
+            const scaleY = bounds.height / drawingEditor.height;
+            drawingEditor.draw(canvasX / scaleX, canvasY / scaleY);
             const res = controller.dispatch(app, 2, x, y);
         });
 
@@ -284,6 +306,9 @@
         let prevTexture = createTexture(canvas.width, canvas.height);
         let nextTexture = createTexture(canvas.width, canvas.height);
         let tmpTexture = createTexture(canvas.width, canvas.height);
+
+        const drawingTexture = createTexture(canvas.width, canvas.height);
+
         const textureFramebuffer = gl.createFramebuffer();
         check();
 
@@ -356,6 +381,14 @@
             prevScreen: gl.getUniformLocation(program, 'prevScreen'),
         };
 
+        function renderDrawingEditor() {
+            gl.uniform1i(passLocation, 2);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, drawingTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, drawingEditor.pixelData);
+
+            renderQuad();
+        }
         console.log(uniforms);
         (function update() {
             app.update();
@@ -372,6 +405,8 @@
             gl.uniform1i(passLocation, 0);
 
             render();
+
+            renderDrawingEditor();
 
             gl.uniform1i(passLocation, 2);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);            

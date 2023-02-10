@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
 mod particles;
+mod drawing_editor;
 
 type EventKind = u8;
 
