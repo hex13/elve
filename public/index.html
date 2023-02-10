@@ -22,6 +22,7 @@
     <script type="module">
         const count = 3000;
         const componentsPerVertex = 2;
+        const featureDrawingEditor = false;
 
         import initElve, {FireworksController, DrawingEditor, create_fireworks_app} from './pkg/elve.js';
 
@@ -382,6 +383,7 @@
         };
 
         function renderDrawingEditor() {
+            if (!featureDrawingEditor) return;
             gl.uniform1i(passLocation, 2);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, drawingTexture);
