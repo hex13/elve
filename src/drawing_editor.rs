@@ -21,6 +21,9 @@ impl DrawingEditor {
             for y_ in y..y + 4 {
                 {
                     let idx = ((self.height - 1 - y_) * self.width + x_) * 4;
+                    if idx + 3 > self.pixels.len() - 1 {
+                        continue;
+                    }
                     self.pixels[idx] = 255;
                     self.pixels[idx + 1] = 255;
                     self.pixels[idx + 2] = 255;
