@@ -3,9 +3,6 @@ mod particles;
 mod drawing_editor;
 use drawing_editor::*;
 
-// type EventKind = u8;
-
-// TODO convert to enums because C style enums are supported in wasm_bindgen
 #[wasm_bindgen]
 pub enum EventKind {
     PointerDown = 1,
