@@ -23,6 +23,8 @@ pub struct FireworksController {
 extern "C" {
     #[wasm_bindgen(js_namespace=window)]
     pub fn pass_firework_buffers(positions: *const f32, colors: *const f32 );
+    #[wasm_bindgen(js_namespace=console)]
+    pub fn log(s: String);
 }
 
 
