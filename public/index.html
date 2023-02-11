@@ -59,15 +59,13 @@
             wasmPositions = buff;
 
             colors = new Float32Array(engine.memory.buffer, pointers.colors, count * 4);
-            const fireworks = ParticleSystemModel.__wrap(mainApp.fireworks_ptr());
-            console.log(fireworks)
 
 
-            init(fireworks, mainApp);
+            init(mainApp);
         });
 
 
-        function init(fireworks, mainApp) {
+        function init(mainApp) {
 
             function check({shader, program} = {}) {
             const err = gl.getError();

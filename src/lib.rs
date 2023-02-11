@@ -112,9 +112,6 @@ impl App {
             drawing_editor: drawing_editor::DrawingEditor::new(width, height),
         }
     }
-    pub fn fireworks_ptr(&self) -> *const ParticleSystemModel {
-        &self.fireworks
-    }
     pub fn drawing_editor_pixels(&self) -> *const u8 {
         &self.drawing_editor.pixels[0]
     }
