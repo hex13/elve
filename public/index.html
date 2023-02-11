@@ -24,11 +24,12 @@
         const componentsPerVertex = 2;
         const featureDrawingEditor = false;
 
-        import initElve, {FireworksController, DrawingEditor, create_fireworks_app} from './pkg/elve.js';
+        import initElve, {DrawingEditor, App, ParticleSystemModel} from './pkg/elve.js';
 
         let wasmPositions, colors;
-        let controller;
+
         let drawingEditor;
+        let mainApp;
         const pointers = {};
         window.pass_firework_buffers = function (positions, colors) {
             pointers.positions = positions;
@@ -48,12 +49,12 @@
             }
             check();
 
-            const app = create_fireworks_app(count);
+            const mainApp = new App();
 
-            controller = new FireworksController();
             drawingEditor = new DrawingEditor(width, height);
+
             drawingEditor.pixelData = new Uint8Array(engine.memory.buffer, drawingEditor.pixels(), width * height * 4);
-            console.log("pixeldata", drawingEditor.pixelData)
+            console.log("pixeldata", drawingEditor.pixelData.length)
             drawingEditor.width = width;
             drawingEditor.height = height;
 
@@ -61,12 +62,16 @@
             wasmPositions = buff;
 
             colors = new Float32Array(engine.memory.buffer, pointers.colors, count * 4);
+            const fireworks = ParticleSystemModel.__wrap(mainApp.fireworks_ptr());
+            console.log(fireworks)
 
-            init(app);
+
+            init(fireworks, mainApp);
         });
 
 
-        function init(app) {
+        function init(fireworks, mainApp) {
+
             function check({shader, program} = {}) {
             const err = gl.getError();
             if (err) console.log("ERR",err);
@@ -213,7 +218,8 @@
             console.log(canvasX, canvasY)
             console.log(x, y)
 
-            const res = controller.dispatch(app, 1, x, y);
+
+            mainApp.dispatch(1, x, y);
         });
 
         canvas.addEventListener('touchstart', e => {
@@ -231,7 +237,8 @@
             const scaleX = bounds.width / drawingEditor.width;
             const scaleY = bounds.height / drawingEditor.height;
             drawingEditor.draw(canvasX / scaleX, canvasY / scaleY);
-            const res = controller.dispatch(app, 2, x, y);
+
+            mainApp.dispatch(2, x, y);
         });
 
         canvas.addEventListener('pointerup', e => {
@@ -241,7 +248,8 @@
 
             const x = (canvasX / bounds.width) * 2.0 - 1.0;
             const y = -((canvasY / bounds.height) * 2.0 - 1.0);
-            const res = controller.dispatch(app, 3, x, y);
+
+            mainApp.dispatch(3, x, y);
         });
 
 
@@ -400,7 +408,7 @@
         }
         console.log(uniforms);
         (function update() {
-            app.update();
+            mainApp.update();
 
             // prevTexture = nextTexture;
             gl.bindFramebuffer(gl.FRAMEBUFFER, textureFramebuffer);
@@ -434,7 +442,7 @@
         })();
 
         document.getElementById('autoexplosions').addEventListener('click', e => {
-                app.set_autoexplosions(e.target.checked);
+            mainApp.dispatch(100, 0, 0);
         });
 
 

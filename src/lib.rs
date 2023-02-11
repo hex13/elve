@@ -8,6 +8,7 @@ type EventKind = u8;
 const PointerDown: EventKind = 1;
 const PointerMove: EventKind = 2;
 const PointerUp: EventKind = 3;
+const TooglePlay: EventKind = 100;
 
 #[wasm_bindgen]
 pub struct FireworksController {
@@ -20,25 +21,29 @@ extern "C" {
     pub fn pass_firework_buffers(positions: *const f32, colors: *const f32 );
 }
 
+
 #[wasm_bindgen]
 impl FireworksController {
     #[wasm_bindgen(constructor)]
     pub fn new() -> FireworksController {
         FireworksController {pointer_down: false}
     }
-    pub fn dispatch(&mut self, app: &mut App, kind: EventKind, x: f32, y: f32) {
+    pub fn dispatch(&mut self, model: &mut ParticleSystemModel, kind: EventKind, x: f32, y: f32) {
         match kind {
             PointerDown => {
-                app.create_explosion_at(x, y);
+                model.create_explosion_at(x, y);
                 self.pointer_down = true;
             }
             PointerMove => {
                 if self.pointer_down {
-                    app.create_explosion_at(x, y);
+                    model.create_explosion_at(x, y);
                 }
             }
             PointerUp => {
                 self.pointer_down = false;
+            }
+            TogglePlay => {
+                model.togglePlay();
             }
             _ => ()
         }
@@ -52,34 +57,17 @@ pub enum Resource {
 
 
 #[wasm_bindgen]
-pub struct App {
-    resources: Vec<Resource>,
+pub struct ParticleSystemModel {
     particle_system_state: particles::ParticleSystemState,
 }
 
 #[wasm_bindgen]
-impl App {
-    // #[wasm_bindgen(constructor)]
-    // pub fn new() -> App {
-    //     App {
-    //         resources: Vec::new(),
-    //     }
-    // }
-
-    // pub fn add_resource(&mut self, kind: ResourceKind) -> Handle {
-    //     match kind {
-    //         ResourceKind::ParticleSystem => {
-    //             self.resources.push(Resource::ParticleSystem(particles::ParticleSystem::new()));
-    //             (self.resources.len() - 1) as u32
-    //         }
-    //         _ => 0
-    //     }
-    // }
+impl ParticleSystemModel {
     pub fn update(&mut self) {
         particles::ParticleSystem::update(&mut self.particle_system_state)
     }
-    pub fn set_autoexplosions(&mut self, value: bool) {
-        self.particle_system_state.autoexplosions = value;
+    pub fn togglePlay(&mut self) {
+        self.particle_system_state.autoexplosions = !self.particle_system_state.autoexplosions;
     }
     pub fn create_explosion_at(&mut self, x: f32, y: f32) {
         particles::ParticleSystem::create_explosion_at(&mut self.particle_system_state, x, y)
@@ -88,7 +76,7 @@ impl App {
 
 
 #[wasm_bindgen]
-pub fn create_fireworks_app(count: usize) -> App {
+pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 
     let unit = 0.2;
     let positions = vec![0.0; count * 2];
@@ -97,12 +85,34 @@ pub fn create_fireworks_app(count: usize) -> App {
     let explosions = Vec::new();
     let particle_system_state = particles::ParticleSystemState { count, positions, velocities, colors, explosions, autoexplosions: false };
 
-    let resources: Vec<Resource> = vec![
-        // Resource::ParticleSystem(particle_system)
-    ];
     pass_firework_buffers(&particle_system_state.positions[0], &particle_system_state.colors[0]);
-    App {
-        resources,
+    ParticleSystemModel {
         particle_system_state,
+    }
+}
+
+#[wasm_bindgen]
+struct App {
+    fireworks: ParticleSystemModel,
+    controller: FireworksController,
+}
+
+#[wasm_bindgen]
+impl App {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> App {
+        App {
+            fireworks: create_fireworks_model(3000),
+            controller: FireworksController::new(),
+        }
+    }
+    pub fn fireworks_ptr(&self) -> *const ParticleSystemModel {
+        &self.fireworks
+    }
+    pub fn update(&mut self) {
+        self.fireworks.update();
+    }
+    pub fn dispatch(&mut self, kind: EventKind, x: f32, y: f32) {
+        self.controller.dispatch(&mut self.fireworks, kind, x, y);
     }
 }
