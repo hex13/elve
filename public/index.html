@@ -24,7 +24,7 @@
         const componentsPerVertex = 2;
         const featureDrawingEditor = false;
 
-        import initElve, {DrawingEditor, App, ParticleSystemModel} from './pkg/elve.js';
+        import initElve, {DrawingEditor, App, ParticleSystemModel, EventKind} from './pkg/elve.js';
 
         let wasmPositions, colors;
 
@@ -219,7 +219,7 @@
             console.log(x, y)
 
 
-            mainApp.dispatch(1, x, y);
+            mainApp.dispatch(EventKind.PointerDown, x, y);
         });
 
         canvas.addEventListener('touchstart', e => {
@@ -238,7 +238,7 @@
             const scaleY = bounds.height / drawingEditor.height;
             drawingEditor.draw(canvasX / scaleX, canvasY / scaleY);
 
-            mainApp.dispatch(2, x, y);
+            mainApp.dispatch(EventKind.PointerMove, x, y);
         });
 
         canvas.addEventListener('pointerup', e => {
@@ -249,7 +249,7 @@
             const x = (canvasX / bounds.width) * 2.0 - 1.0;
             const y = -((canvasY / bounds.height) * 2.0 - 1.0);
 
-            mainApp.dispatch(3, x, y);
+            mainApp.dispatch(EventKind.PointerUp, x, y);
         });
 
 
@@ -442,7 +442,7 @@
         })();
 
         document.getElementById('autoexplosions').addEventListener('click', e => {
-            mainApp.dispatch(100, 0, 0);
+            mainApp.dispatch(EventKind.TogglePlay, 0, 0);
         });
 
 

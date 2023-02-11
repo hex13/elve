@@ -2,13 +2,17 @@ use wasm_bindgen::prelude::*;
 mod particles;
 mod drawing_editor;
 
-type EventKind = u8;
+// type EventKind = u8;
 
 // TODO convert to enums because C style enums are supported in wasm_bindgen
-const PointerDown: EventKind = 1;
-const PointerMove: EventKind = 2;
-const PointerUp: EventKind = 3;
-const TooglePlay: EventKind = 100;
+#[wasm_bindgen]
+pub enum EventKind {
+    PointerDown = 1,
+    PointerMove = 2,
+    PointerUp = 3,
+    TogglePlay = 100,
+}
+
 
 #[wasm_bindgen]
 pub struct FireworksController {
@@ -30,19 +34,19 @@ impl FireworksController {
     }
     pub fn dispatch(&mut self, model: &mut ParticleSystemModel, kind: EventKind, x: f32, y: f32) {
         match kind {
-            PointerDown => {
+            EventKind::PointerDown => {
                 model.create_explosion_at(x, y);
                 self.pointer_down = true;
             }
-            PointerMove => {
+            EventKind::PointerMove => {
                 if self.pointer_down {
                     model.create_explosion_at(x, y);
                 }
             }
-            PointerUp => {
+            EventKind::PointerUp => {
                 self.pointer_down = false;
             }
-            TogglePlay => {
+            EventKind::TogglePlay => {
                 model.togglePlay();
             }
             _ => ()
