@@ -24,7 +24,7 @@
         const componentsPerVertex = 2;
         const featureDrawingEditor = false;
 
-        import initElve, {DrawingEditor, App, ParticleSystemModel, EventKind} from './pkg/elve.js';
+        import initElve, {App, ParticleSystemModel, EventKind} from './pkg/elve.js';
 
         let wasmPositions, colors;
 
@@ -47,14 +47,11 @@
                 console.log("engine " + (++c) , engine.memory.buffer.byteLength);
                 lastLength = engine.memory.buffer.byteLength;
             }
-            check();
 
-            const mainApp = new App();
+            const mainApp = new App(width, height);
 
-            drawingEditor = new DrawingEditor(width, height);
-
-            drawingEditor.pixelData = new Uint8Array(engine.memory.buffer, drawingEditor.pixels(), width * height * 4);
-            console.log("pixeldata", drawingEditor.pixelData.length)
+            drawingEditor = {};
+            drawingEditor.pixelData = new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(), width * height * 4);
             drawingEditor.width = width;
             drawingEditor.height = height;
 
@@ -236,9 +233,7 @@
 
             const scaleX = bounds.width / drawingEditor.width;
             const scaleY = bounds.height / drawingEditor.height;
-            drawingEditor.draw(canvasX / scaleX, canvasY / scaleY);
-
-            mainApp.dispatch(EventKind.PointerMove, x, y);
+            mainApp.dispatch(EventKind.PointerMove, x, y, canvasX / scaleX, canvasY / scaleY);
         });
 
         canvas.addEventListener('pointerup', e => {

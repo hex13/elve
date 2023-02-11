@@ -1,15 +1,12 @@
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
 pub struct DrawingEditor {
-    pixels: Vec<u8>,
+    pub pixels: Vec<u8>,
     width: usize,
     height: usize,
 }
 
-#[wasm_bindgen]
 impl DrawingEditor {
-    #[wasm_bindgen(constructor)]
     pub fn new(width: usize, height: usize) -> DrawingEditor {
         DrawingEditor { 
             pixels: vec![0; width * height * 4 /* rgba */ ],

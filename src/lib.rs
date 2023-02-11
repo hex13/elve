@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
 mod particles;
 mod drawing_editor;
+use drawing_editor::*;
 
 // type EventKind = u8;
 
@@ -100,25 +101,33 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 #[wasm_bindgen]
 struct App {
     fireworks: ParticleSystemModel,
+    drawing_editor: drawing_editor::DrawingEditor,
     controller: FireworksController,
 }
 
 #[wasm_bindgen]
 impl App {
     #[wasm_bindgen(constructor)]
-    pub fn new() -> App {
+    pub fn new(width: usize, height: usize) -> App {
         App {
             fireworks: create_fireworks_model(3000),
             controller: FireworksController::new(),
+            drawing_editor: drawing_editor::DrawingEditor::new(width, height),
         }
     }
     pub fn fireworks_ptr(&self) -> *const ParticleSystemModel {
         &self.fireworks
     }
+    pub fn drawing_editor_pixels(&self) -> *const u8 {
+        &self.drawing_editor.pixels[0]
+    }
     pub fn update(&mut self) {
         self.fireworks.update();
     }
-    pub fn dispatch(&mut self, kind: EventKind, x: f32, y: f32) {
+    // TODO make coordinates uniform between fireworks and drawing editor
+    // to eliminate need of having to separate pairs of coords
+    pub fn dispatch(&mut self, kind: EventKind, x: f32, y: f32, x2: usize, y2: usize) {
         self.controller.dispatch(&mut self.fireworks, kind, x, y);
+        self.drawing_editor.draw(x2, y2);
     }
 }
