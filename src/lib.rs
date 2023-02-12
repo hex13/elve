@@ -2,6 +2,9 @@ use wasm_bindgen::prelude::*;
 mod particles;
 mod drawing_editor;
 use drawing_editor::*;
+use std::rc::Rc;
+use std::cell::RefCell;
+
 
 #[wasm_bindgen]
 pub enum EventKind {
@@ -25,30 +28,31 @@ extern "C" {
 #[wasm_bindgen]
 pub struct FireworksController {
     pointer_down: bool,
+    model: Rc<RefCell<ParticleSystemModel>>,
 }
 
 impl FireworksController {
-    pub fn new() -> FireworksController {
-        FireworksController {pointer_down: false}
+    pub fn new(model: Rc<RefCell<ParticleSystemModel>>) -> FireworksController {
+        FireworksController {pointer_down: false, model}
     }
-    fn dispatch(&mut self, screen: &Screen, model: &mut ParticleSystemModel, kind: &EventKind, x: usize, y: usize) {
+    fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         let ndc_x = (x as f32 / screen.width as f32) * 2.0 - 1.0;
         let ndc_y = -((y as f32 / screen.height as f32) * 2.0 - 1.0);
         match kind {
             EventKind::PointerDown => {
-                model.create_explosion_at(ndc_x, ndc_y);
+                self.model.borrow_mut().create_explosion_at(ndc_x, ndc_y);
                 self.pointer_down = true;
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    model.create_explosion_at(ndc_x, ndc_y);
+                    self.model.borrow_mut().create_explosion_at(ndc_x, ndc_y);
                 }
             }
             EventKind::PointerUp => {
                 self.pointer_down = false;
             }
             EventKind::TogglePlay => {
-                model.togglePlay();
+                self.model.borrow_mut().togglePlay();
             }
             _ => ()
         }
@@ -59,21 +63,22 @@ impl FireworksController {
 
 pub struct DrawingEditorController {
     pointer_down: bool,
+    model: Rc<RefCell<DrawingEditor>>,
 }
 
 impl DrawingEditorController {
-    pub fn new() -> DrawingEditorController {
-        DrawingEditorController {pointer_down: false}
+    pub fn new(model: Rc<RefCell<DrawingEditor>>) -> DrawingEditorController {
+        DrawingEditorController {pointer_down: false, model}
     }
-    fn dispatch(&mut self, screen: &Screen, model: &mut DrawingEditor, kind: &EventKind, x: usize, y: usize) {
+    fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         match kind {
             EventKind::PointerDown => {
                 self.pointer_down = true;
-                model.draw(x, y);
+                self.model.borrow_mut().draw(x, y);
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    model.draw(x, y);
+                    self.model.borrow_mut().draw(x, y);
                 }
             }
             EventKind::PointerUp => {
@@ -136,8 +141,8 @@ struct Screen {
 
 #[wasm_bindgen]
 struct App {
-    fireworks: ParticleSystemModel,
-    drawing_editor: drawing_editor::DrawingEditor,
+    fireworks: Rc<RefCell<ParticleSystemModel>>,
+    drawing_editor: Rc<RefCell<DrawingEditor>>,
     controller: FireworksController,
     drawing_editor_controller: DrawingEditorController,
     screen: Screen,
@@ -147,23 +152,24 @@ struct App {
 impl App {
     #[wasm_bindgen(constructor)]
     pub fn new(width: usize, height: usize) -> App {
+        let drawing_editor = Rc::new(RefCell::new(drawing_editor::DrawingEditor::new(width, height)));
+        let fireworks = Rc::new(RefCell::new(create_fireworks_model(3000)));
         App {
-            fireworks: create_fireworks_model(3000),
-            controller: FireworksController::new(),
-            drawing_editor: drawing_editor::DrawingEditor::new(width, height),
+            fireworks: Rc::clone(&fireworks),
+            controller: FireworksController::new(Rc::clone(&fireworks)),
+            drawing_editor: Rc::clone(&drawing_editor),
             screen: Screen {width, height},
-            drawing_editor_controller: DrawingEditorController::new(),
+            drawing_editor_controller: DrawingEditorController::new(Rc::clone(&drawing_editor)),
         }
     }
     pub fn drawing_editor_pixels(&self) -> *const u8 {
-        &self.drawing_editor.pixels[0]
+        &self.drawing_editor.borrow().pixels[0]
     }
     pub fn update(&mut self) {
-        self.fireworks.update();
+        self.fireworks.borrow_mut().update();
     }
     pub fn dispatch(&mut self, kind: EventKind, x: usize, y: usize) {
-        self.controller.dispatch(&self.screen, &mut self.fireworks, &kind, x, y);
-        self.drawing_editor_controller.dispatch(&self.screen, &mut self.drawing_editor, &kind, x, y);
-        // self.drawing_editor.draw(x, y);
+        self.controller.dispatch(&self.screen, &kind, x, y);
+        self.drawing_editor_controller.dispatch(&self.screen, &kind, x, y);
     }
 }
