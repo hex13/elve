@@ -208,13 +208,10 @@
             const canvasX = e.clientX - bounds.left;
             const canvasY = e.clientY - bounds.top;
 
-            const x = (canvasX / bounds.width) * 2.0 - 1.0;
-            const y = -((canvasY / bounds.height) * 2.0 - 1.0);
-            console.log(canvasX, canvasY)
-            console.log(x, y)
+            const scaleX = bounds.width / drawingEditor.width;
+            const scaleY = bounds.height / drawingEditor.height;
+            mainApp.dispatch(EventKind.PointerDown, canvasX / scaleX, canvasY / scaleY);
 
-
-            mainApp.dispatch(EventKind.PointerDown, x, y);
         });
 
         canvas.addEventListener('touchstart', e => {
@@ -226,12 +223,9 @@
             const canvasX = e.clientX - bounds.left;
             const canvasY = e.clientY - bounds.top;
 
-            const x = (canvasX / bounds.width) * 2.0 - 1.0;
-            const y = -((canvasY / bounds.height) * 2.0 - 1.0);
-
             const scaleX = bounds.width / drawingEditor.width;
             const scaleY = bounds.height / drawingEditor.height;
-            mainApp.dispatch(EventKind.PointerMove, x, y, canvasX / scaleX, canvasY / scaleY);
+            mainApp.dispatch(EventKind.PointerMove, canvasX / scaleX, canvasY / scaleY);
         });
 
         canvas.addEventListener('pointerup', e => {
@@ -239,10 +233,10 @@
             const canvasX = e.clientX - bounds.left;
             const canvasY = e.clientY - bounds.top;
 
-            const x = (canvasX / bounds.width) * 2.0 - 1.0;
-            const y = -((canvasY / bounds.height) * 2.0 - 1.0);
+            const scaleX = bounds.width / drawingEditor.width;
+            const scaleY = bounds.height / drawingEditor.height;
+            mainApp.dispatch(EventKind.PointerUp, canvasX / scaleX, canvasY / scaleY);
 
-            mainApp.dispatch(EventKind.PointerUp, x, y);
         });
 
 
