@@ -108,7 +108,7 @@ struct App {
     fireworks: Rc<RefCell<ParticleSystemModel>>,
     drawing_editor: Rc<RefCell<DrawingEditor>>,
     controller: FireworksController,
-    drawing_editor_controller: DrawingEditorController,
+    drawing_editor_controller: DrawRectController,
     screen: Screen,
 }
 
@@ -123,7 +123,7 @@ impl App {
             controller: FireworksController::new(Rc::clone(&fireworks)),
             drawing_editor: Rc::clone(&drawing_editor),
             screen: Screen {width, height},
-            drawing_editor_controller: DrawingEditorController::new(Rc::clone(&drawing_editor)),
+            drawing_editor_controller: drawing_editor::DrawRectController::new(Rc::clone(&drawing_editor)),
         }
     }
     pub fn drawing_editor_pixels(&self) -> *const u8 {
