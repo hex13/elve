@@ -4,15 +4,8 @@ mod drawing_editor;
 use drawing_editor::*;
 use std::rc::Rc;
 use std::cell::RefCell;
-
-
-#[wasm_bindgen]
-pub enum EventKind {
-    PointerDown = 1,
-    PointerMove = 2,
-    PointerUp = 3,
-    TogglePlay = 100,
-}
+mod events;
+use events::*;
 
 
 
