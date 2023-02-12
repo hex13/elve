@@ -1,5 +1,11 @@
 use wasm_bindgen::prelude::*;
 
+use std::rc::Rc;
+use std::cell::RefCell;
+
+use crate::events::*;
+use crate::common::*;
+
 pub struct DrawingEditor {
     pub pixels: Vec<u8>,
     width: usize,
@@ -31,6 +37,33 @@ impl DrawingEditor {
     
                 }
             }
+        }
+    }
+}
+pub struct DrawingEditorController {
+    pointer_down: bool,
+    model: Rc<RefCell<DrawingEditor>>,
+}
+
+impl DrawingEditorController {
+    pub fn new(model: Rc<RefCell<DrawingEditor>>) -> DrawingEditorController {
+        DrawingEditorController {pointer_down: false, model}
+    }
+    pub fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
+        match kind {
+            EventKind::PointerDown => {
+                self.pointer_down = true;
+                self.model.borrow_mut().draw(x, y);
+            }
+            EventKind::PointerMove => {
+                if self.pointer_down {
+                    self.model.borrow_mut().draw(x, y);
+                }
+            }
+            EventKind::PointerUp => {
+                self.pointer_down = false;
+            }
+            _ => ()
         }
     }
 }

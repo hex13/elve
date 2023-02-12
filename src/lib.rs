@@ -6,6 +6,8 @@ use std::rc::Rc;
 use std::cell::RefCell;
 mod events;
 use events::*;
+mod common;
+use common::*;
 
 
 
@@ -54,33 +56,6 @@ impl FireworksController {
 
 
 
-pub struct DrawingEditorController {
-    pointer_down: bool,
-    model: Rc<RefCell<DrawingEditor>>,
-}
-
-impl DrawingEditorController {
-    pub fn new(model: Rc<RefCell<DrawingEditor>>) -> DrawingEditorController {
-        DrawingEditorController {pointer_down: false, model}
-    }
-    fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
-        match kind {
-            EventKind::PointerDown => {
-                self.pointer_down = true;
-                self.model.borrow_mut().draw(x, y);
-            }
-            EventKind::PointerMove => {
-                if self.pointer_down {
-                    self.model.borrow_mut().draw(x, y);
-                }
-            }
-            EventKind::PointerUp => {
-                self.pointer_down = false;
-            }
-            _ => ()
-        }
-    }
-}
 
 
 pub enum Resource {
@@ -124,10 +99,6 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 }
 
 
-struct Screen {
-    width: usize,
-    height: usize,
-}
 
 
 
