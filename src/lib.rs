@@ -26,9 +26,7 @@ extern "C" {
 }
 
 
-#[wasm_bindgen]
 impl FireworksController {
-    #[wasm_bindgen(constructor)]
     pub fn new() -> FireworksController {
         FireworksController {pointer_down: false}
     }
