@@ -12,10 +12,7 @@ pub enum EventKind {
 }
 
 
-#[wasm_bindgen]
-pub struct FireworksController {
-    pointer_down: bool,
-}
+
 
 #[wasm_bindgen]
 extern "C" {
@@ -25,12 +22,16 @@ extern "C" {
     pub fn log(s: String);
 }
 
+#[wasm_bindgen]
+pub struct FireworksController {
+    pointer_down: bool,
+}
 
 impl FireworksController {
     pub fn new() -> FireworksController {
         FireworksController {pointer_down: false}
     }
-    fn dispatch(&mut self, screen: &Screen, model: &mut ParticleSystemModel, kind: EventKind, x: usize, y: usize) {
+    fn dispatch(&mut self, screen: &Screen, model: &mut ParticleSystemModel, kind: &EventKind, x: usize, y: usize) {
         let ndc_x = (x as f32 / screen.width as f32) * 2.0 - 1.0;
         let ndc_y = -((y as f32 / screen.height as f32) * 2.0 - 1.0);
         match kind {
@@ -48,6 +49,35 @@ impl FireworksController {
             }
             EventKind::TogglePlay => {
                 model.togglePlay();
+            }
+            _ => ()
+        }
+    }
+}
+
+
+
+pub struct DrawingEditorController {
+    pointer_down: bool,
+}
+
+impl DrawingEditorController {
+    pub fn new() -> DrawingEditorController {
+        DrawingEditorController {pointer_down: false}
+    }
+    fn dispatch(&mut self, screen: &Screen, model: &mut DrawingEditor, kind: &EventKind, x: usize, y: usize) {
+        match kind {
+            EventKind::PointerDown => {
+                self.pointer_down = true;
+                model.draw(x, y);
+            }
+            EventKind::PointerMove => {
+                if self.pointer_down {
+                    model.draw(x, y);
+                }
+            }
+            EventKind::PointerUp => {
+                self.pointer_down = false;
             }
             _ => ()
         }
@@ -102,11 +132,14 @@ struct Screen {
 }
 
 
+
+
 #[wasm_bindgen]
 struct App {
     fireworks: ParticleSystemModel,
     drawing_editor: drawing_editor::DrawingEditor,
     controller: FireworksController,
+    drawing_editor_controller: DrawingEditorController,
     screen: Screen,
 }
 
@@ -119,6 +152,7 @@ impl App {
             controller: FireworksController::new(),
             drawing_editor: drawing_editor::DrawingEditor::new(width, height),
             screen: Screen {width, height},
+            drawing_editor_controller: DrawingEditorController::new(),
         }
     }
     pub fn drawing_editor_pixels(&self) -> *const u8 {
@@ -128,7 +162,8 @@ impl App {
         self.fireworks.update();
     }
     pub fn dispatch(&mut self, kind: EventKind, x: usize, y: usize) {
-        self.controller.dispatch(&self.screen, &mut self.fireworks, kind, x, y);
-        self.drawing_editor.draw(x, y);
+        self.controller.dispatch(&self.screen, &mut self.fireworks, &kind, x, y);
+        self.drawing_editor_controller.dispatch(&self.screen, &mut self.drawing_editor, &kind, x, y);
+        // self.drawing_editor.draw(x, y);
     }
 }
