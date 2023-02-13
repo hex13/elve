@@ -108,6 +108,7 @@ struct App {
     controller: FireworksController,
     drawing_editor_controller: DrawRectController,
     screen: Screen,
+    texture: Vec<u8>,
 }
 
 #[wasm_bindgen]
@@ -116,13 +117,27 @@ impl App {
     pub fn new(width: usize, height: usize) -> App {
         let drawing_editor = Rc::new(RefCell::new(drawing_editor::DrawingEditor::new(width, height)));
         let fireworks = Rc::new(RefCell::new(create_fireworks_model(3000)));
+
+        let mut texture = Vec::new();
+        for y in 0..=255 {
+            for x in 0..=255 {
+                texture.push(0);
+                texture.push(0);
+                texture.push(100);
+                texture.push(255);
+            }
+        }
         App {
             fireworks: Rc::clone(&fireworks),
             controller: FireworksController::new(Rc::clone(&fireworks)),
             drawing_editor: Rc::clone(&drawing_editor),
             screen: Screen {width, height},
             drawing_editor_controller: drawing_editor::DrawRectController::new(Rc::clone(&drawing_editor)),
+            texture,
         }
+    }
+    pub fn texture_pixels(&self) -> *const u8 {
+        &self.texture[0]
     }
     pub fn drawing_editor_pixels(&self) -> *const u8 {
         &self.drawing_editor.borrow().pixels[0]
