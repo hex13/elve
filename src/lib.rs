@@ -62,13 +62,11 @@ pub enum Resource {
     ParticleSystem(particles::ParticleSystem),
 }
 
-
-#[wasm_bindgen]
 pub struct ParticleSystemModel {
     particle_system_state: particles::ParticleSystemState,
 }
 
-#[wasm_bindgen]
+
 impl ParticleSystemModel {
     pub fn update(&mut self) {
         particles::ParticleSystem::update(&mut self.particle_system_state)
@@ -82,7 +80,7 @@ impl ParticleSystemModel {
 }
 
 
-#[wasm_bindgen]
+
 pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 
     let unit = 0.2;
