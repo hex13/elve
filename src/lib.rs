@@ -139,8 +139,8 @@ impl App {
     pub fn texture_pixels(&self) -> *const u8 {
         &self.texture[0]
     }
-    pub fn drawing_editor_pixels(&self) -> *const u8 {
-        &self.drawing_editor.borrow().pixels[0]
+    pub fn drawing_editor_pixels(&self, layer_idx: usize) -> *const u8 {
+        self.drawing_editor.borrow().pixels(layer_idx)
     }
     pub fn update(&mut self) {
         self.fireworks.borrow_mut().update();

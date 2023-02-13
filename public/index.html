@@ -51,7 +51,10 @@
             const mainApp = new App(width, height);
 
             drawingEditor = {};
-            drawingEditor.pixelData = new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(), width * height * 4);
+            drawingEditor.layers = [
+                new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(0), width * height * 4),
+                new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(1), width * height * 4),
+            ];
             drawingEditor.width = width;
             drawingEditor.height = height;
 
@@ -389,9 +392,11 @@
             gl.uniform1i(passLocation, 2);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, drawingTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, drawingEditor.pixelData);
 
-            renderQuad();
+            for (let i = 0; i < drawingEditor.layers.length; i++) {
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, drawingEditor.layers[i]);
+                renderQuad();
+            }
         }
         console.log(uniforms);
         (function update() {
