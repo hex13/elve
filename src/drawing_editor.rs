@@ -57,7 +57,10 @@ impl DrawingEditorController {
     pub fn new(model: Rc<RefCell<DrawingEditor>>) -> DrawingEditorController {
         DrawingEditorController {pointer_down: false, model}
     }
-    pub fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
+}
+
+impl Controller for DrawingEditorController {
+    fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         let thickness = 10;
         match kind {
             EventKind::PointerDown => {
@@ -84,11 +87,9 @@ pub struct DrawRectController {
     y0: usize,
 }
 
-impl DrawRectController {
-    pub fn new(model: Rc<RefCell<DrawingEditor>>) -> DrawRectController {
-        DrawRectController {model, x0: 0, y0: 0, pointer_down: false}
-    }
-    pub fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
+
+impl Controller for DrawRectController {
+    fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         let min_x = cmp::min(self.x0, x);
         let min_y = cmp::min(self.y0, y);
         let max_x = cmp::max(self.x0, x);
@@ -114,6 +115,13 @@ impl DrawRectController {
             }
             _ => ()
         }
+    }
+
+}
+
+impl DrawRectController {
+    pub fn new(model: Rc<RefCell<DrawingEditor>>) -> DrawRectController {
+        DrawRectController {model, x0: 0, y0: 0, pointer_down: false}
     }
 }
 

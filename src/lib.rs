@@ -12,24 +12,8 @@ use common::*;
 
 
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace=window)]
-    pub fn pass_firework_buffers(positions: *const f32, colors: *const f32 );
-    #[wasm_bindgen(js_namespace=console)]
-    pub fn log(s: String);
-}
 
-#[wasm_bindgen]
-pub struct FireworksController {
-    pointer_down: bool,
-    model: Rc<RefCell<ParticleSystemModel>>,
-}
-
-impl FireworksController {
-    pub fn new(model: Rc<RefCell<ParticleSystemModel>>) -> FireworksController {
-        FireworksController {pointer_down: false, model}
-    }
+impl Controller for FireworksController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         let ndc_x = (x as f32 / screen.width as f32) * 2.0 - 1.0;
         let ndc_y = -((y as f32 / screen.height as f32) * 2.0 - 1.0);
@@ -51,6 +35,25 @@ impl FireworksController {
             }
             _ => ()
         }
+    }
+}
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace=window)]
+    pub fn pass_firework_buffers(positions: *const f32, colors: *const f32 );
+    #[wasm_bindgen(js_namespace=console)]
+    pub fn log(s: String);
+}
+
+pub struct FireworksController {
+    pointer_down: bool,
+    model: Rc<RefCell<ParticleSystemModel>>,
+}
+
+impl FireworksController {
+    pub fn new(model: Rc<RefCell<ParticleSystemModel>>) -> FireworksController {
+        FireworksController {pointer_down: false, model}
     }
 }
 
@@ -105,10 +108,10 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 struct App {
     fireworks: Rc<RefCell<ParticleSystemModel>>,
     drawing_editor: Rc<RefCell<DrawingEditor>>,
-    controller: FireworksController,
-    drawing_editor_controller: DrawRectController,
     screen: Screen,
     texture: Vec<u8>,
+    controllers: Vec<Box<dyn Controller>>,
+    controller_idx: usize,
 }
 
 #[wasm_bindgen]
@@ -129,11 +132,15 @@ impl App {
         }
         App {
             fireworks: Rc::clone(&fireworks),
-            controller: FireworksController::new(Rc::clone(&fireworks)),
             drawing_editor: Rc::clone(&drawing_editor),
             screen: Screen {width, height},
-            drawing_editor_controller: drawing_editor::DrawRectController::new(Rc::clone(&drawing_editor)),
             texture,
+            controllers: vec![
+                Box::new(FireworksController::new(Rc::clone(&fireworks))),
+                Box::new(drawing_editor::DrawRectController::new(Rc::clone(&drawing_editor))),
+                Box::new(drawing_editor::DrawingEditorController::new(Rc::clone(&drawing_editor))),
+            ],
+            controller_idx: 0,
         }
     }
     pub fn texture_pixels(&self) -> *const u8 {
@@ -145,10 +152,12 @@ impl App {
     pub fn update(&mut self) {
         self.fireworks.borrow_mut().update();
     }
+    pub fn set_controller(&mut self,  controller_idx: usize) {
+        self.controller_idx = controller_idx;
+    }
     pub fn dispatch(&mut self, kind: EventKind, x: i32, y: i32) {
         let final_x = if x < 0 { 0 } else { x as usize };
         let final_y = if y < 0 { 0 } else { y as usize };
-        self.controller.dispatch(&self.screen, &kind, final_x, final_y);
-        self.drawing_editor_controller.dispatch(&self.screen, &kind, final_x, final_y);
+        self.controllers[self.controller_idx].dispatch(&self.screen, &kind, final_x, final_y);
     }
 }

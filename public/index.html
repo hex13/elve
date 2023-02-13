@@ -17,12 +17,15 @@
 </head>
 <body>
     <label>auto explosions: <input id="autoexplosions" type="checkbox"></label>
+    <button data-controller="0">fireworks</button>
+    <button data-controller="1">rectangles</button>
+    <button data-controller="2">drawing</button>
     <br>
     <canvas id="game" width="1024" height="1024"></canvas>
     <script type="module">
         const count = 3000;
         const componentsPerVertex = 2;
-        const featureDrawingEditor = false;
+        const featureDrawingEditor = true;
 
         import initElve, {App, EventKind} from './pkg/elve.js';
 
@@ -436,6 +439,12 @@
         document.getElementById('autoexplosions').addEventListener('click', e => {
             mainApp.dispatch(EventKind.TogglePlay, 0, 0);
         });
+
+        document.querySelectorAll('[data-controller]').forEach(el => {
+            el.addEventListener('click', e => {
+                mainApp.set_controller(~~e.target.getAttribute('data-controller'));
+            })
+        })
 
 
         }
