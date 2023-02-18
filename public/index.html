@@ -20,6 +20,7 @@
     <button data-controller="0">fireworks</button>
     <button data-controller="1">rectangles</button>
     <button data-controller="2">drawing</button>
+    <div>avg FPS: <span id="fps"></span></div>
     <br>
     <canvas id="game" width="1024" height="1024"></canvas>
     <script type="module">
@@ -357,6 +358,10 @@
                 renderQuad();
             }
         }
+        let fps = 0;
+        let maxFpsCounter = 100;
+        let lastFpsTime = Date.now();
+        const fpsEl = document.getElementById('fps');
         (function update() {
             mainApp.update();
 
@@ -384,6 +389,14 @@
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, null);
 
+            fps++;
+            if (fps == maxFpsCounter) {
+                fps = 0;
+                const now = Date.now();
+
+                fpsEl.innerText = maxFpsCounter / (now - lastFpsTime) * 1000;
+                lastFpsTime = now;
+            }
             requestAnimationFrame(update);
         })();
 
