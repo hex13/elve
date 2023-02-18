@@ -360,7 +360,7 @@
 
         function renderDrawingEditor() {
             if (!featureDrawingEditor) return;
-            gl.uniform1i(passLocation, shaderConstants.MODE_BLOOM);
+            gl.uniform1i(passLocation, shaderConstants.MODE_TEXTURE);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, drawingTexture);
 
