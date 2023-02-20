@@ -126,29 +126,6 @@
                     gl_FragColor = color;
                 } else if (pass == MODE_CLEAN_WITH_TRAILS) {
                     gl_FragColor = vec4(0.0, 0.0, 0.0, 0.36);
-                    return;
-                    vec4 prevPixel = texture2D(prevScreen, texPos);
-                    vec4 currPixel = texture2D(screen, texPos);
-                    {
-                    vec4 p = texture2D(screen, texPos + vec2(a, 0.0))
-                         + texture2D(screen, texPos - vec2(a, 0.0))
-                         + texture2D(screen, texPos + vec2(0.0, a))
-                         + texture2D(screen, texPos - vec2(0.0, a));
-                    p /= 2.0;
-                    float prevBrightness = (p.r + p.g + p.b) * p.a;
-                    float currBrightness = (currPixel.r + currPixel.g + currPixel.b) * currPixel.a;
-                    if (prevBrightness > currBrightness)
-                        currPixel = p;
-                    }
-
-                    float prevBrightness = (prevPixel.r + prevPixel.g + prevPixel.b) * prevPixel.a;
-                    float currBrightness = (currPixel.r + currPixel.g + currPixel.b) * currPixel.a;
-                    if (currBrightness > prevBrightness) {
-                        gl_FragColor = currPixel;
-                    } else {
-                        gl_FragColor = mix(prevPixel, currPixel, 0.2);
-
-                    }
                 } else if (pass == MODE_BLOOM) {
                     float a = 0.0028;
                     vec4 neighbors;
