@@ -4,6 +4,7 @@ const featureDrawingEditor = true;
 
 import initElve, {App, EventKind} from './pkg/elve.js';
 import {createShaders, shaderConstants} from './shaders';
+import * as gui from './gui';
 let wasmPositions, colors;
 
 let drawingEditor;
