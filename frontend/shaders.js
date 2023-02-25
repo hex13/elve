@@ -7,7 +7,7 @@ export const shaderConstants = {
 const shaderDefines = Object.entries(shaderConstants).map((entry) => `#define ${entry[0]} ${entry[1]}`).join('\n');
 
 const shaderSources = {
-    VERTEX_SHADER: `
+    VERTEX_SHADER: /*glsl*/`
     precision highp float;
     attribute vec2 aPosition;
     attribute vec4 aColor;
@@ -22,7 +22,7 @@ const shaderSources = {
         color = aColor;
     }
     `,
-    FRAGMENT_SHADER:  `
+    FRAGMENT_SHADER:  /*glsl*/`
     precision highp float;
     uniform sampler2D screen;
     uniform sampler2D prevScreen;
