@@ -183,9 +183,9 @@ function renderQuad() {
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 }
-function render() {
+function renderFireworks() {
 
-
+    gl.uniform1i(passLocation, shaderConstants.MODE_COLOR);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.activeTexture(gl.TEXTURE1);
@@ -251,9 +251,8 @@ const fpsEl = document.getElementById('fps');
     gl.uniform1i(passLocation, shaderConstants.MODE_CLEAN_WITH_TRAILS);
 
     renderQuad();
-    gl.uniform1i(passLocation, shaderConstants.MODE_COLOR);
 
-    render();
+    renderFireworks();
 
     renderDrawingEditor();
 
