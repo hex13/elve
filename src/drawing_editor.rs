@@ -41,7 +41,7 @@ impl DrawingEditor {
     pub fn clear(&mut self, layer_idx: usize) {
         self.layers[layer_idx].fill(0);
     }
-    pub fn draw_line(&mut self, layer_idx: usize, x0: usize, y0: usize, x1: usize, y1: usize, color: Color) {
+    pub fn draw_line(&mut self, layer_idx: usize, x0: usize, y0: usize, x1: usize, y1: usize, thickness: usize, color: Color) {
         let width = x1 as f32 - x0 as f32;
         let height = y1 as f32 - y0 as f32;
         let dist = ((width * width + height * height) as f32).sqrt();
@@ -53,7 +53,7 @@ impl DrawingEditor {
         for step in 0..dist as usize {
             x += dx;
             y += dy;
-            self.draw_rect(layer_idx, x as usize, y as usize, 2, 2, color);
+            self.draw_rect(layer_idx, x as usize, y as usize, thickness, thickness, color);
         }
     }
     pub fn draw_rect(&mut self, layer_idx: usize, x: usize, y: usize, width: usize, height: usize, color: Color) {
@@ -76,27 +76,32 @@ impl DrawingEditor {
 }
 pub struct DrawingEditorController {
     pointer_down: bool,
+    x0: usize,
+    y0: usize,
     model: Rc<RefCell<DrawingEditor>>,
 }
 
 impl DrawingEditorController {
     pub fn new(model: Rc<RefCell<DrawingEditor>>) -> DrawingEditorController {
-        DrawingEditorController {pointer_down: false, model}
+        DrawingEditorController {pointer_down: false, model, x0: 0, y0: 0}
     }
 }
 
 impl Controller for DrawingEditorController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
-        let thickness = 10;
+        let thickness = 5;
         let color = [1.0, 0.0, 0.0, 1.0];
         match kind {
             EventKind::PointerDown => {
                 self.pointer_down = true;
-                self.model.borrow_mut().draw_rect(0, x, y, thickness, thickness, color);
+                self.x0 = x;
+                self.y0 = y;
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    self.model.borrow_mut().draw_rect(0, x, y, thickness, thickness, color);
+                    self.model.borrow_mut().draw_line(0, self.x0, self.y0, x, y, thickness, color);
+                    self.x0 = x;
+                    self.y0 = y;
                 }
             }
             EventKind::PointerUp => {
