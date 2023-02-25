@@ -16,10 +16,21 @@ pub struct DrawingEditor {
 
 impl DrawingEditor {
     pub fn new(width: usize, height: usize) -> DrawingEditor {
+        let mut test_layer = vec![0; width * height * 4 /* rgba */ ];
+        for (i, v) in test_layer.iter_mut().enumerate() {
+            if i % 4 == 3 {
+                *v = 50;
+            } else if i % 4 == 1 {
+                *v = 0;
+            } else {
+                *v = 0;
+            }
+        }
         DrawingEditor { 
             layers: vec![
                 vec![0; width * height * 4 /* rgba */ ],
                 vec![0; width * height * 4 /* rgba */ ],
+                test_layer,
             ],
             width, height,
         }

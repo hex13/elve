@@ -37,12 +37,12 @@ function Layers({ layers, onSwap }) {
     </div>
 }
 
-export function createGUI(el) {
+export function createGUI(el, { changeLayers }) {
     const root = ReactDOM.createRoot(el)
     let layers = [
-        {id: 1, name: 'first'},
-        {id: 2, name: 'second'},
-        {id: 3, name: 'third'},
+        {id: 0, name: 'first'},
+        {id: 1, name: 'second'},
+        {id: 2, name: 'third'},
     ];
     function render() {
         root.render(<Layers layers={layers} onSwap={(aId, bId) => {
@@ -53,6 +53,7 @@ export function createGUI(el) {
                 if (layer.id == bId) return a;
                 return layer;
             });
+            changeLayers(layers);
             render();
         }} />);
     }

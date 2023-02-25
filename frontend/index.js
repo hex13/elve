@@ -6,7 +6,12 @@ import initElve, {App, EventKind} from './pkg/elve.js';
 import {createShaders, shaderConstants} from './shaders';
 import * as gui from './gui';
 
-gui.createGUI(document.getElementById('gui'));
+let layerOrder = [0, 1, 2];
+gui.createGUI(document.getElementById('gui'), {
+    changeLayers(layers) {
+        layerOrder = layers.map(layer => layer.id);
+    }
+});
 let wasmPositions, colors;
 
 let drawingEditor;
@@ -34,6 +39,7 @@ initElve().then(engine => {
     drawingEditor.layers = [
         new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(0), width * height * 4),
         new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(1), width * height * 4),
+        new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(2), width * height * 4),
     ];
     drawingEditor.width = width;
     drawingEditor.height = height;
@@ -224,8 +230,10 @@ function renderDrawingEditor() {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, drawingTexture);
 
+
     for (let i = 0; i < drawingEditor.layers.length; i++) {
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, drawingEditor.layers[i]);
+        const layer = drawingEditor.layers[layerOrder[i]];
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, layer);
         renderQuad();
     }
 }
