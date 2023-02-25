@@ -41,6 +41,21 @@ impl DrawingEditor {
     pub fn clear(&mut self, layer_idx: usize) {
         self.layers[layer_idx].fill(0);
     }
+    pub fn draw_line(&mut self, layer_idx: usize, x0: usize, y0: usize, x1: usize, y1: usize, color: Color) {
+        let width = x1 as f32 - x0 as f32;
+        let height = y1 as f32 - y0 as f32;
+        let dist = ((width * width + height * height) as f32).sqrt();
+        let dx = width / dist;
+        let dy = height / dist;
+        let mut x = x0 as f32;
+        let mut y = y0 as f32;
+
+        for step in 0..dist as usize {
+            x += dx;
+            y += dy;
+            self.draw_rect(layer_idx, x as usize, y as usize, 2, 2, color);
+        }
+    }
     pub fn draw_rect(&mut self, layer_idx: usize, x: usize, y: usize, width: usize, height: usize, color: Color) {
         let mut layer = &mut self.layers[layer_idx];
         for x_ in x..x + width {
