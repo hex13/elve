@@ -19,9 +19,9 @@ impl DrawingEditor {
         let mut test_layer = vec![0; width * height * 4 /* rgba */ ];
         for (i, v) in test_layer.iter_mut().enumerate() {
             if i % 4 == 3 {
-                *v = 50;
-            } else if i % 4 == 1 {
-                *v = 0;
+                *v = 20;
+            } else if i % 4 == 0 {
+                *v = 255;
             } else {
                 *v = 0;
             }
@@ -41,7 +41,7 @@ impl DrawingEditor {
     pub fn clear(&mut self, layer_idx: usize) {
         self.layers[layer_idx].fill(0);
     }
-    pub fn draw_rect(&mut self, layer_idx: usize, x: usize, y: usize, width: usize, height: usize) {
+    pub fn draw_rect(&mut self, layer_idx: usize, x: usize, y: usize, width: usize, height: usize, color: Color) {
         let mut layer = &mut self.layers[layer_idx];
         for x_ in x..x + width {
             for y_ in y..y + height {
@@ -50,10 +50,10 @@ impl DrawingEditor {
                     if idx + 3 > layer.len() - 1 {
                         continue;
                     }
-                    layer[idx] = 255;
-                    layer[idx + 1] = 255;
-                    layer[idx + 2] = 255;
-                    layer[idx + 3] = 100;
+                    layer[idx] = (color[0] * 255.0) as u8;
+                    layer[idx + 1] = (color[1] * 255.0) as u8;
+                    layer[idx + 2] = (color[2] * 255.0) as u8;
+                    layer[idx + 3] = (color[3] * 255.0) as u8;
                 }
             }
         }
@@ -73,14 +73,15 @@ impl DrawingEditorController {
 impl Controller for DrawingEditorController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         let thickness = 10;
+        let color = [1.0, 0.0, 0.0, 1.0];
         match kind {
             EventKind::PointerDown => {
                 self.pointer_down = true;
-                self.model.borrow_mut().draw_rect(0, x, y, thickness, thickness);
+                self.model.borrow_mut().draw_rect(0, x, y, thickness, thickness, color);
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    self.model.borrow_mut().draw_rect(0, x, y, thickness, thickness);
+                    self.model.borrow_mut().draw_rect(0, x, y, thickness, thickness, color);
                 }
             }
             EventKind::PointerUp => {
@@ -105,7 +106,7 @@ impl Controller for DrawRectController {
         let min_y = cmp::min(self.y0, y);
         let max_x = cmp::max(self.x0, x);
         let max_y = cmp::max(self.y0, y);
-
+        let color = [1.0, 1.0, 1.0, 1.0];
         match kind {
             EventKind::PointerDown => {
                 self.pointer_down = true;
@@ -116,13 +117,13 @@ impl Controller for DrawRectController {
                 if self.pointer_down {
                     let mut model = self.model.borrow_mut();
                     model.clear(1);
-                    model.draw_rect(1, min_x, min_y, max_x - min_x, max_y - min_y);
+                    model.draw_rect(1, min_x, min_y, max_x - min_x, max_y - min_y, color);
                 }
             }
             EventKind::PointerUp => {
                 self.pointer_down = false;
                 self.model.borrow_mut().clear(1);
-                self.model.borrow_mut().draw_rect(0, min_x, min_y, max_x - min_x, max_y - min_y);
+                self.model.borrow_mut().draw_rect(0, min_x, min_y, max_x - min_x, max_y - min_y, color);
             }
             _ => ()
         }

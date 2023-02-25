@@ -2,9 +2,8 @@ use wasm_bindgen::prelude::*;
 use std::f32::consts::PI;
 const gravity: f32 = -0.0003;
 
-type Vector2 = [f32; 2];
-type Vector4 = [f32; 4];
-type Color = Vector4;
+use crate::common::*;
+
 
 fn rgba(r: f32, g: f32, b: f32, a: f32) -> Color {
     [r, g, b, a]

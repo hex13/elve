@@ -1,5 +1,10 @@
 use crate::events::*;
 
+pub type Vector2 = [f32; 2];
+pub type Vector4 = [f32; 4];
+pub type Color = Vector4;
+
+
 pub struct Screen {
     pub width: usize,
     pub height: usize,
