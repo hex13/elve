@@ -254,7 +254,6 @@ const fpsEl = document.getElementById('fps');
 
     renderFireworks();
 
-    renderDrawingEditor();
 
     gl.uniform1i(passLocation, shaderConstants.MODE_BLOOM);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);            
@@ -266,7 +265,7 @@ const fpsEl = document.getElementById('fps');
     renderQuad();
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, null);
-
+    renderDrawingEditor();
     fps++;
     if (fps == maxFpsCounter) {
         fps = 0;
