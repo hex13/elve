@@ -14,6 +14,13 @@
             width: 100vmin;
             background: black;
         }
+        .cta {
+            margin: 4px;
+            font-size: 1.5em;
+            color: #ffffaa;
+            padding: 4px;
+            border: 1px solid rgba(255, 255, 100, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -23,7 +30,7 @@
     <button data-controller="1">rectangles</button>
     <button data-controller="2">drawing</button>
     <div>avg FPS: <span id="fps"></span></div>
-    <div>(click/drag to see fireworks)</div>
+    <div class="cta">(click/drag to see fireworks)</div>
     <canvas id="game" width="1024" height="1024"></canvas>
     <script type="module" src="index.js"></script>
 </body>
