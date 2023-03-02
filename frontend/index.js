@@ -161,6 +161,8 @@ let tmpTexture = createTexture(canvas.width, canvas.height);
 
 const drawingTexture = createTexture(canvas.width, canvas.height);
 
+drawingEditor.textures = drawingEditor.layers.map(() => createTexture(canvas.width, canvas.height));
+
 const textureFramebuffer = gl.createFramebuffer();
 
 
@@ -226,16 +228,22 @@ const uniforms = {
 
 function renderDrawingEditor() {
     if (!featureDrawingEditor) return;
+    const isDirty = mainApp.dirty();
+
     gl.uniform1i(passLocation, shaderConstants.MODE_TEXTURE);
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, drawingTexture);
 
 
     for (let i = 0; i < drawingEditor.layers.length; i++) {
+        gl.bindTexture(gl.TEXTURE_2D, drawingEditor.textures[i]);
+
         const layer = drawingEditor.layers[layerOrder[i]];
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, layer);
+        if (isDirty)
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, layer);
         renderQuad();
     }
+    mainApp.set_dirty(false);
+
 }
 let fps = 0;
 let maxFpsCounter = 100;

@@ -112,6 +112,7 @@ struct App {
     texture: Vec<u8>,
     controllers: Vec<Box<dyn Controller>>,
     controller_idx: usize,
+    dirty: bool,
 }
 
 #[wasm_bindgen]
@@ -141,6 +142,7 @@ impl App {
                 Box::new(drawing_editor::DrawingEditorController::new(Rc::clone(&drawing_editor))),
             ],
             controller_idx: 0,
+            dirty: true,
         }
     }
     pub fn texture_pixels(&self) -> *const u8 {
@@ -155,9 +157,16 @@ impl App {
     pub fn set_controller(&mut self,  controller_idx: usize) {
         self.controller_idx = controller_idx;
     }
+    pub fn dirty(&self) -> bool {
+        self.dirty
+    }
+    pub fn set_dirty(&mut self, value: bool) {
+        self.dirty = value;
+    }
     pub fn dispatch(&mut self, kind: EventKind, x: i32, y: i32) {
         let final_x = if x < 0 { 0 } else { x as usize };
         let final_y = if y < 0 { 0 } else { y as usize };
         self.controllers[self.controller_idx].dispatch(&self.screen, &kind, final_x, final_y);
+        self.dirty = true;
     }
 }
