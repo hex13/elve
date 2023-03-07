@@ -7,11 +7,6 @@ import {createShaders, shaderConstants} from './shaders';
 import * as gui from './gui';
 
 let layerOrder = [0, 1, 2];
-gui.createGUI(document.getElementById('gui'), {
-    changeLayers(layers) {
-        layerOrder = layers.map(layer => layer.id);
-    }
-});
 let wasmPositions, colors;
 
 let drawingEditor;
@@ -55,6 +50,14 @@ initElve().then(engine => {
 
 
 function init(mainApp) {
+    gui.createGUI(document.getElementById('gui'), {
+        changeLayers(layers) {
+            layerOrder = layers.map(layer => layer.id);
+        },
+        changeAutoexplosions() {
+            mainApp.dispatch(EventKind.TogglePlay, 0, 0);
+        }
+    });
 
     function check({shader, program} = {}) {
     const err = gl.getError();
@@ -284,10 +287,6 @@ const fpsEl = document.getElementById('fps');
     }
     requestAnimationFrame(update);
 })();
-
-document.getElementById('autoexplosions').addEventListener('click', e => {
-    mainApp.dispatch(EventKind.TogglePlay, 0, 0);
-});
 
 document.querySelectorAll('[data-controller]').forEach(el => {
     el.addEventListener('click', e => {

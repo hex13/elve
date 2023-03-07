@@ -37,7 +37,13 @@ function Layers({ layers, onSwap }) {
     </div>
 }
 
-export function createGUI(el, { changeLayers }) {
+function FireworksControlls({onChangeAutoexplosions}) {
+    return <div>
+        <label>auto explosions: <input onChange={onChangeAutoexplosions} type="checkbox" /></label>
+    </div>
+}
+
+export function createGUI(el, { changeLayers, changeAutoexplosions }) {
     const root = ReactDOM.createRoot(el)
     let layers = [
         {id: 0, name: 'first'},
@@ -45,17 +51,21 @@ export function createGUI(el, { changeLayers }) {
         {id: 2, name: 'third'},
     ];
     function render() {
-        root.render(<Layers layers={layers} onSwap={(aId, bId) => {
-            const a = layers.find(layer => layer.id == aId);
-            const b = layers.find(layer => layer.id == bId);
-            layers = layers.map(layer => {
-                if (layer.id == aId) return b;
-                if (layer.id == bId) return a;
-                return layer;
-            });
-            changeLayers(layers);
-            render();
-        }} />);
+        const tree = <>
+            <Layers layers={layers} onSwap={(aId, bId) => {
+                const a = layers.find(layer => layer.id == aId);
+                const b = layers.find(layer => layer.id == bId);
+                layers = layers.map(layer => {
+                    if (layer.id == aId) return b;
+                    if (layer.id == bId) return a;
+                    return layer;
+                });
+                changeLayers(layers);
+                render();
+            }} />
+            <FireworksControlls onChangeAutoexplosions={changeAutoexplosions}/>
+        </>;
+        root.render(tree);
     }
     render();
 }
