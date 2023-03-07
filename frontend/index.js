@@ -56,6 +56,9 @@ function init(mainApp) {
         },
         changeAutoexplosions() {
             mainApp.dispatch(EventKind.TogglePlay, 0, 0);
+        },
+        changeController(idx) {
+            mainApp.set_controller(idx);
         }
     });
 
@@ -288,11 +291,6 @@ const fpsEl = document.getElementById('fps');
     requestAnimationFrame(update);
 })();
 
-document.querySelectorAll('[data-controller]').forEach(el => {
-    el.addEventListener('click', e => {
-        mainApp.set_controller(~~e.target.getAttribute('data-controller'));
-    })
-})
 
 
 }
