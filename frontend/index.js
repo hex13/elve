@@ -6,6 +6,7 @@ const featureDrawingEditor = true;
 import {EventKind} from './pkg/elve.js';
 import {createShaders, shaderConstants} from './shaders';
 import {initEngine} from './init-engine';
+import {addListeners} from './canvas-events.js';
 import * as gui from './gui';
 
 initEngine(count, init);
@@ -37,41 +38,7 @@ function init({ mainApp, wasmPositions, drawingEditor, colors }) {
     }
 }
 const canvas = document.getElementById('game');
-canvas.addEventListener('pointerdown', e => {
-    const bounds = e.target.getBoundingClientRect();
-    const canvasX = e.clientX - bounds.left;
-    const canvasY = e.clientY - bounds.top;
-
-    const scaleX = bounds.width / drawingEditor.width;
-    const scaleY = bounds.height / drawingEditor.height;
-    mainApp.dispatch(EventKind.PointerDown, canvasX / scaleX, canvasY / scaleY);
-
-});
-
-canvas.addEventListener('touchstart', e => {
-    e.preventDefault();
-});
-
-canvas.addEventListener('pointermove', e => {
-    const bounds = e.target.getBoundingClientRect();
-    const canvasX = e.clientX - bounds.left;
-    const canvasY = e.clientY - bounds.top;
-
-    const scaleX = bounds.width / drawingEditor.width;
-    const scaleY = bounds.height / drawingEditor.height;
-    mainApp.dispatch(EventKind.PointerMove, canvasX / scaleX, canvasY / scaleY);
-});
-
-canvas.addEventListener('pointerup', e => {
-    const bounds = e.target.getBoundingClientRect();
-    const canvasX = e.clientX - bounds.left;
-    const canvasY = e.clientY - bounds.top;
-
-    const scaleX = bounds.width / drawingEditor.width;
-    const scaleY = bounds.height / drawingEditor.height;
-    mainApp.dispatch(EventKind.PointerUp, canvasX / scaleX, canvasY / scaleY);
-
-});
+addListeners(canvas, mainApp, drawingEditor);
 
 
 const gl = canvas.getContext('webgl2', {
