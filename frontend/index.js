@@ -6,11 +6,7 @@ import initElve, {App, EventKind} from './pkg/elve.js';
 import {createShaders, shaderConstants} from './shaders';
 import * as gui from './gui';
 
-let layerOrder = [0, 1, 2];
-let wasmPositions, colors;
-
-let drawingEditor;
-let mainApp;
+{
 const pointers = {};
 window.pass_firework_buffers = function (positions, colors) {
     pointers.positions = positions;
@@ -30,7 +26,7 @@ initElve().then(engine => {
 
     const mainApp = new App(width, height);
 
-    drawingEditor = {};
+    const drawingEditor = {};
     drawingEditor.layers = [
         new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(0), width * height * 4),
         new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(1), width * height * 4),
@@ -39,17 +35,18 @@ initElve().then(engine => {
     drawingEditor.width = width;
     drawingEditor.height = height;
 
-    const buff = new Float32Array(engine.memory.buffer, pointers.positions, count * componentsPerVertex);
-    wasmPositions = buff;
-
-    colors = new Float32Array(engine.memory.buffer, pointers.colors, count * 4);
-
-
-    init(mainApp);
+    init({
+        mainApp,
+        wasmPositions: new Float32Array(engine.memory.buffer, pointers.positions, count * componentsPerVertex),
+        drawingEditor,
+        colors: new Float32Array(engine.memory.buffer, pointers.colors, count * 4),
+    });
 });
+}
 
+function init({ mainApp, wasmPositions, drawingEditor, colors }) {
+    let layerOrder = [0, 1, 2];
 
-function init(mainApp) {
     gui.createGUI(document.getElementById('gui'), {
         changeLayers(layers) {
             layerOrder = layers.map(layer => layer.id);
