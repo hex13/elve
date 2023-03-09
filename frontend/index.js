@@ -84,9 +84,6 @@ function createTexture(width, height) {
 }
 
 let texture = createTexture(canvas.width, canvas.height);
-let prevTexture = createTexture(canvas.width, canvas.height);
-let nextTexture = createTexture(canvas.width, canvas.height);
-let tmpTexture = createTexture(canvas.width, canvas.height);
 
 const drawingTexture = createTexture(canvas.width, canvas.height);
 
@@ -95,10 +92,6 @@ drawingEditor.textures = drawingEditor.layers.map(() => createTexture(canvas.wid
 const textureFramebuffer = gl.createFramebuffer();
 
 
-
-const velocities = new Float32Array(count * componentsPerVertex);
-const particles =  new Float32Array(count * componentsPerVertex);
-let center;
 function renderQuad() {
     gl.uniform1i(uniforms.screen, 0);
     gl.uniform1i(uniforms.prevScreen, 1);
@@ -147,7 +140,6 @@ function renderFireworks() {
 
 
 }
-let angle = 0.0;
 
 const passLocation = gl.getUniformLocation(program, 'pass');
 const uniforms = {
