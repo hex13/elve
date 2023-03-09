@@ -7,6 +7,7 @@ import {EventKind} from './pkg/elve.js';
 import {createShaders, shaderConstants} from './shaders';
 import {initEngine} from './init-engine';
 import {addListeners} from './canvas-events.js';
+import {Renderer} from './renderer.js';
 import * as gui from './gui';
 
 initEngine(count, init);
@@ -40,18 +41,11 @@ function init({ mainApp, wasmPositions, drawingEditor, colors }) {
 const canvas = document.getElementById('game');
 addListeners(canvas, mainApp, drawingEditor);
 
-
-const gl = canvas.getContext('webgl2', {
-    premultipliedAlpha: false, 
-    alpha: true,
-    antialias: true,
-    preserveDrawingBuffer: true,
-});
+const renderer = new Renderer();
+const gl = renderer.init(canvas);
 
 const shaders = createShaders(gl);
 
-gl.enable(gl.BLEND);
-gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 const program = gl.createProgram();
 gl.attachShader(program, shaders.fragment);
 gl.attachShader(program, shaders.vertex);
