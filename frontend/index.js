@@ -8,7 +8,7 @@ import {shaderConstants} from './shaders';
 import {initEngine} from './init-engine';
 import {addListeners} from './canvas-events.js';
 import {Renderer} from './renderer.js';
-import * as gui from './gui';
+import * as gui from './gui/gui';
 
 initEngine(count, init);
 function init({ mainApp, wasmPositions, drawingEditor, colors }) {
