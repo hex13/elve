@@ -19,6 +19,7 @@ function init({ mainApp, wasmPositions, drawingEditor, colors }) {
             layerOrder = layers.map(layer => layer.id);
         },
         changeAutoexplosions() {
+            // TODO make autoexplosions checkbox work independently from selected controller in Rust
             mainApp.dispatch(EventKind.TogglePlay, 0, 0);
         },
         changeController(idx) {

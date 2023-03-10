@@ -30,6 +30,7 @@ impl Controller for FireworksController {
             EventKind::PointerUp => {
                 self.pointer_down = false;
             }
+            // TODO make autoexplosions checkbox work independently from selected controller in Rust
             EventKind::TogglePlay => {
                 self.model.borrow_mut().togglePlay();
             }
