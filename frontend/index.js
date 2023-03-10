@@ -4,7 +4,7 @@ const componentsPerVertex = 2;
 const featureDrawingEditor = true;
 
 import {EventKind} from './pkg/elve.js';
-import {createShaders, shaderConstants} from './shaders';
+import {shaderConstants} from './shaders';
 import {initEngine} from './init-engine';
 import {addListeners} from './canvas-events.js';
 import {Renderer} from './renderer.js';
@@ -42,15 +42,7 @@ const canvas = document.getElementById('game');
 addListeners(canvas, mainApp, drawingEditor);
 
 const renderer = new Renderer();
-const gl = renderer.init(canvas);
-
-const shaders = createShaders(gl);
-
-const program = gl.createProgram();
-gl.attachShader(program, shaders.fragment);
-gl.attachShader(program, shaders.vertex);
-gl.linkProgram(program);
-
+const { gl, program } = renderer.init(canvas);
 
 const buffer = gl.createBuffer();
 const colorBuffer = gl.createBuffer();
