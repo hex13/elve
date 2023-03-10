@@ -77,8 +77,6 @@ function createTexture(width, height) {
 
 let texture = createTexture(canvas.width, canvas.height);
 
-const drawingTexture = createTexture(canvas.width, canvas.height);
-
 drawingEditor.textures = drawingEditor.layers.map(() => createTexture(canvas.width, canvas.height));
 
 const textureFramebuffer = gl.createFramebuffer();
