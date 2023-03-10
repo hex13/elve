@@ -25,6 +25,12 @@ function init({ mainApp, wasmPositions, drawingEditor, colors }) {
         },
         changeController(idx) {
             mainApp.set_controller(idx);
+        },
+        changeColor(e) {
+            const color = parseInt(e.target.value.slice(1), 16);
+            // TODO don't hardcode idx
+            const controllerIdx = 2;
+            mainApp.dispatch_to(controllerIdx, EventKind.ChangeColor, color, 0);
         }
     });
 

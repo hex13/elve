@@ -78,19 +78,19 @@ pub struct DrawingEditorController {
     pointer_down: bool,
     x0: usize,
     y0: usize,
+    color: Color,
     model: Rc<RefCell<DrawingEditor>>,
 }
 
 impl DrawingEditorController {
     pub fn new(model: Rc<RefCell<DrawingEditor>>) -> DrawingEditorController {
-        DrawingEditorController {pointer_down: false, model, x0: 0, y0: 0}
+        DrawingEditorController {pointer_down: false, model, x0: 0, y0: 0, color: [0.0, 0.0, 0.0, 1.0]}
     }
 }
 
 impl Controller for DrawingEditorController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         let thickness = 5;
-        let color = [1.0, 0.0, 0.0, 1.0];
         match kind {
             EventKind::PointerDown => {
                 self.pointer_down = true;
@@ -99,13 +99,19 @@ impl Controller for DrawingEditorController {
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    self.model.borrow_mut().draw_line(0, self.x0, self.y0, x, y, thickness, color);
+                    self.model.borrow_mut().draw_line(0, self.x0, self.y0, x, y, thickness, self.color);
                     self.x0 = x;
                     self.y0 = y;
                 }
             }
             EventKind::PointerUp => {
                 self.pointer_down = false;
+            }
+            EventKind::ChangeColor => {
+                let r = (x & 0xff0000) >> 16;
+                let g = (x & 0xff00) >> 8;
+                let b = x & 0xff;
+                self.color = [(r as f32) / 255.0, (g as f32) / 255.0, (b as f32) / 255.0, 1.0];
             }
             _ => ()
         }

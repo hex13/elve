@@ -3,16 +3,17 @@ import * as ReactDOM from 'react-dom/client';
 import {Layers} from './layers';
 
 
-function FireworksControlls({onChangeAutoexplosions, onChangeController}) {
+function FireworksControlls({onChangeAutoexplosions, onChangeController, onColorChange}) {
     return <div>
         <label>auto explosions: <input onChange={onChangeAutoexplosions} type="checkbox" /></label>
         <button onClick={() => onChangeController(0)}>fireworks</button>
         <button onClick={() => onChangeController(1)}>rectangles</button>
         <button onClick={() => onChangeController(2)}>drawing</button>
+        <input onChange={onColorChange} type="color" />
     </div>
 }
 
-export function createGUI(el, { changeLayers, changeAutoexplosions, changeController }) {
+export function createGUI(el, { changeLayers, changeAutoexplosions, changeController, changeColor }) {
     const root = ReactDOM.createRoot(el)
     let layers = [
         {id: 0, name: 'first'},
@@ -32,7 +33,7 @@ export function createGUI(el, { changeLayers, changeAutoexplosions, changeContro
                 changeLayers(layers);
                 render();
             }} />
-            <FireworksControlls onChangeAutoexplosions={changeAutoexplosions} onChangeController={changeController}/>
+            <FireworksControlls onChangeAutoexplosions={changeAutoexplosions} onChangeController={changeController} onColorChange={changeColor}/>
         </>;
         root.render(tree);
     }
