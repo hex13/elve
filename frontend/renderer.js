@@ -34,4 +34,11 @@ export class Renderer {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         return texture;
     }
+    createBuffer(data) {
+        const gl = this.gl;
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+        return buffer;
+    }
 }

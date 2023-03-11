@@ -50,22 +50,16 @@ const { gl, program } = renderer.init(canvas);
 const buffer = gl.createBuffer();
 const colorBuffer = gl.createBuffer();
 
-const quad = (() => {
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-        -1.0, -1.0,
-        1.0, -1.0,
-        1.0, 1.0,
-        1.0, 1.0,
-        -1.0, 1.0,
-        -1.0, -1.0,
-    ]), gl.DYNAMIC_DRAW);
-    return {buffer};
-})();
+const quad = renderer.createBuffer(new Float32Array([
+    -1.0, -1.0,
+    1.0, -1.0,
+    1.0, 1.0,
+    1.0, 1.0,
+    -1.0, 1.0,
+    -1.0, -1.0,
+]));
 
 gl.useProgram(program);
-
 
 let texture = renderer.createTexture(canvas.width, canvas.height);
 
@@ -79,7 +73,7 @@ function renderQuad() {
     gl.uniform1i(uniforms.prevScreen, 1);
 
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, quad.buffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
 
 
     const aPosition = gl.getAttribLocation(program, 'aPosition');
@@ -188,9 +182,5 @@ const fpsEl = document.getElementById('fps');
     requestAnimationFrame(update);
 })();
 
-
-
 }
-
-
 
