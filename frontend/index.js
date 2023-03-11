@@ -32,15 +32,16 @@ function init({ mainApp, wasmPositions, drawingEditor, colors }) {
     });
 
     function check({shader, program} = {}) {
-    const err = gl.getError();
-    if (err) console.log("ERR",err);
-    if (shader) {
-        const info = gl.getShaderInfoLog(shader);
-        if (info) console.log(info)
-    }
-    if (program) {
-        const info = gl.getProgramInfoLog(program);
-        if (info) console.log(info);
+        const err = gl.getError();
+        if (err) console.log("ERR",err);
+        if (shader) {
+            const info = gl.getShaderInfoLog(shader);
+            if (info) console.log(info)
+        }
+        if (program) {
+            const info = gl.getProgramInfoLog(program);
+            if (info) console.log(info);
+        }
     }
 
 const renderer = new Renderer();
