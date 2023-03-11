@@ -76,12 +76,19 @@ const shaderSources = {
     `,
 };
 
-export function createShaders(gl) {
+export function createProgram(gl) {
     const shaders = Object.fromEntries(Object.entries(shaderSources).map(([k, source]) => {
         const shader = gl.createShader(gl[k]);
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
         return [k.split('_')[0].toLowerCase(), shader];
     }));
-    return shaders;
+
+    const program = gl.createProgram();
+    gl.attachShader(program, shaders.fragment);
+    gl.attachShader(program, shaders.vertex);
+    gl.linkProgram(program);
+
+    return program;
 }
+

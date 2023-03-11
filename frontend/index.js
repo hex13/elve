@@ -8,6 +8,8 @@ import {shaderConstants} from './shaders';
 import {initEngine} from './init-engine';
 import {createEventHandlers} from './canvas-events.js';
 import {Renderer} from './renderer.js';
+import {createProgram} from './shaders';
+
 import * as gui from './gui/gui';
 
 initEngine(count, init);
@@ -45,7 +47,8 @@ function init({ mainApp, wasmPositions, drawingEditor, colors }) {
     }
 
 const renderer = new Renderer();
-const { gl, program } = renderer.init(canvas);
+const { gl } = renderer.init(canvas);
+const program = createProgram(gl);
 
 const buffer = gl.createBuffer();
 const colorBuffer = gl.createBuffer();
