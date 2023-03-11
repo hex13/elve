@@ -1,6 +1,6 @@
 import {EventKind} from './pkg/elve.js';
 
-export function addListeners(canvas, mainApp, drawingEditor) {
+export function createEventHandlers(canvas, mainApp, drawingEditor) {
     const createEventHandler = (kind) =>  e => {
         const bounds = e.target.getBoundingClientRect();
         const canvasX = e.clientX - bounds.left;
@@ -16,10 +16,21 @@ export function addListeners(canvas, mainApp, drawingEditor) {
         pointerMove: createEventHandler(EventKind.PointerMove),
         pointerUp: createEventHandler(EventKind.PointerUp),
     };
-    canvas.addEventListener('pointerdown', handlers.pointerDown);
-    canvas.addEventListener('pointermove', handlers.pointerMove);
-    canvas.addEventListener('pointerup', handlers.pointerUp);
-    canvas.addEventListener('touchstart', e => {
-        e.preventDefault();
-    });
+    return {
+        ...handlers,
+        changeAutoexplosions() {
+            // TODO don't hardcode idx
+            const controllerIdx = 0;
+            mainApp.dispatch_to(controllerIdx, EventKind.TogglePlay, 0, 0);
+        },
+        changeController(idx) {
+            mainApp.set_controller(idx);
+        },
+        changeColor(e) {
+            const color = parseInt(e.target.value.slice(1), 16);
+            // TODO don't hardcode idx
+            const controllerIdx = 2;
+            mainApp.dispatch_to(controllerIdx, EventKind.ChangeColor, color, 0);
+        },
+    };
 }

@@ -6,32 +6,29 @@ const featureDrawingEditor = true;
 import {EventKind} from './pkg/elve.js';
 import {shaderConstants} from './shaders';
 import {initEngine} from './init-engine';
-import {addListeners} from './canvas-events.js';
+import {createEventHandlers} from './canvas-events.js';
 import {Renderer} from './renderer.js';
 import * as gui from './gui/gui';
 
 initEngine(count, init);
 function init({ mainApp, wasmPositions, drawingEditor, colors }) {
+    const canvas = document.getElementById('game');
+    const handlers = createEventHandlers(canvas, mainApp, drawingEditor);
+
+    canvas.addEventListener('pointerdown', handlers.pointerDown);
+    canvas.addEventListener('pointermove', handlers.pointerMove);
+    canvas.addEventListener('pointerup', handlers.pointerUp);
+    canvas.addEventListener('touchstart', e => {
+        e.preventDefault();
+    });
+
     let layerOrder = [0, 1, 2];
 
     gui.createGUI(document.getElementById('gui'), {
         changeLayers(layers) {
             layerOrder = layers.map(layer => layer.id);
         },
-        changeAutoexplosions() {
-            // TODO don't hardcode idx
-            const controllerIdx = 0;
-            mainApp.dispatch_to(controllerIdx, EventKind.TogglePlay, 0, 0);
-        },
-        changeController(idx) {
-            mainApp.set_controller(idx);
-        },
-        changeColor(e) {
-            const color = parseInt(e.target.value.slice(1), 16);
-            // TODO don't hardcode idx
-            const controllerIdx = 2;
-            mainApp.dispatch_to(controllerIdx, EventKind.ChangeColor, color, 0);
-        }
+        ...handlers,
     });
 
     function check({shader, program} = {}) {
@@ -45,9 +42,6 @@ function init({ mainApp, wasmPositions, drawingEditor, colors }) {
         const info = gl.getProgramInfoLog(program);
         if (info) console.log(info);
     }
-}
-const canvas = document.getElementById('game');
-addListeners(canvas, mainApp, drawingEditor);
 
 const renderer = new Renderer();
 const { gl, program } = renderer.init(canvas);
