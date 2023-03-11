@@ -162,11 +162,10 @@ impl App {
         self.dirty = value;
     }
     pub fn dispatch(&mut self, kind: EventKind, x: i32, y: i32) {
-        self.dispatcher.dispatch(kind, x, y);
-        self.dirty = true;
+        self.dispatch_to(DefaultController, kind, x, y);
     }
     pub fn dispatch_to(&mut self, controller_idx: usize, kind: EventKind, x: i32, y: i32) {
-        self.dispatcher.dispatch_to(controller_idx, kind, x, y);
+        self.dispatcher.dispatch(controller_idx, kind, x, y);
         self.dirty = true;
     }
 }
