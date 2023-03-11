@@ -89,6 +89,16 @@ export function createProgram(gl) {
     gl.attachShader(program, shaders.vertex);
     gl.linkProgram(program);
 
-    return program;
+    const uniforms = {
+        screen: gl.getUniformLocation(program, 'screen'),
+        prevScreen: gl.getUniformLocation(program, 'prevScreen'),
+        pass: gl.getUniformLocation(program, 'pass'),
+    };
+
+    const attributes = {
+        aPosition: gl.getAttribLocation(program, 'aPosition'),
+        aColor: gl.getAttribLocation(program, 'aColor'),
+    };
+    return { program, uniforms, attributes };
 }
 

@@ -48,7 +48,7 @@ function init({ mainApp, wasmPositions, drawingEditor, colors }) {
 
 const renderer = new Renderer();
 const { gl } = renderer.init(canvas);
-const program = createProgram(gl);
+const { program, uniforms, attributes } = createProgram(gl);
 
 const buffer = gl.createBuffer();
 const colorBuffer = gl.createBuffer();
@@ -79,7 +79,7 @@ function renderQuad() {
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
 
 
-    const aPosition = gl.getAttribLocation(program, 'aPosition');
+    const aPosition = attributes.aPosition;
     gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aPosition);
 
@@ -88,7 +88,7 @@ function renderQuad() {
 }
 function renderFireworks() {
 
-    gl.uniform1i(passLocation, shaderConstants.MODE_COLOR);
+    gl.uniform1i(uniforms.pass, shaderConstants.MODE_COLOR);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.activeTexture(gl.TEXTURE1);
@@ -101,7 +101,7 @@ function renderFireworks() {
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, particles, gl.DYNAMIC_DRAW);
 
-    const aPosition = gl.getAttribLocation(program, 'aPosition');
+    const aPosition = attributes.aPosition;
     gl.vertexAttribPointer(aPosition, componentsPerVertex, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aPosition);
 
@@ -109,7 +109,7 @@ function renderFireworks() {
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, colors, gl.DYNAMIC_DRAW);
 
-    const aColor = gl.getAttribLocation(program, 'aColor');
+    const aColor = attributes.aColor;
 
     gl.vertexAttribPointer(aColor, 4 /*rgba*/, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aColor);
@@ -120,17 +120,11 @@ function renderFireworks() {
 
 }
 
-const passLocation = gl.getUniformLocation(program, 'pass');
-const uniforms = {
-    screen: gl.getUniformLocation(program, 'screen'),
-    prevScreen: gl.getUniformLocation(program, 'prevScreen'),
-};
-
 function renderDrawingEditor() {
     if (!featureDrawingEditor) return;
     const isDirty = mainApp.dirty();
 
-    gl.uniform1i(passLocation, shaderConstants.MODE_TEXTURE);
+    gl.uniform1i(uniforms.pass, shaderConstants.MODE_TEXTURE);
     gl.activeTexture(gl.TEXTURE0);
 
 
@@ -156,14 +150,14 @@ const fpsEl = document.getElementById('fps');
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
 
-    gl.uniform1i(passLocation, shaderConstants.MODE_CLEAN_WITH_TRAILS);
+    gl.uniform1i(uniforms.pass, shaderConstants.MODE_CLEAN_WITH_TRAILS);
 
     renderQuad();
 
     renderFireworks();
 
 
-    gl.uniform1i(passLocation, shaderConstants.MODE_BLOOM);
+    gl.uniform1i(uniforms.pass, shaderConstants.MODE_BLOOM);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);            
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
