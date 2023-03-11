@@ -9,6 +9,8 @@ use events::*;
 mod common;
 use common::*;
 
+mod dispatcher;
+use dispatcher::*;
 
 
 
@@ -108,11 +110,9 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 struct App {
     fireworks: Rc<RefCell<ParticleSystemModel>>,
     drawing_editor: Rc<RefCell<DrawingEditor>>,
-    screen: Screen,
     texture: Vec<u8>,
-    controllers: Vec<Box<dyn Controller>>,
-    controller_idx: usize,
     dirty: bool,
+    dispatcher: Dispatcher,
 }
 
 #[wasm_bindgen]
@@ -134,14 +134,12 @@ impl App {
         App {
             fireworks: Rc::clone(&fireworks),
             drawing_editor: Rc::clone(&drawing_editor),
-            screen: Screen {width, height},
             texture,
-            controllers: vec![
+            dispatcher: Dispatcher::new(vec![
                 Box::new(FireworksController::new(Rc::clone(&fireworks))),
                 Box::new(drawing_editor::DrawRectController::new(Rc::clone(&drawing_editor))),
                 Box::new(drawing_editor::DrawingEditorController::new(Rc::clone(&drawing_editor))),
-            ],
-            controller_idx: 0,
+            ], Screen {width, height}),
             dirty: true,
         }
     }
@@ -155,7 +153,7 @@ impl App {
         self.fireworks.borrow_mut().update();
     }
     pub fn set_controller(&mut self,  controller_idx: usize) {
-        self.controller_idx = controller_idx;
+        self.dispatcher.set_controller(controller_idx);
     }
     pub fn dirty(&self) -> bool {
         self.dirty
@@ -164,12 +162,11 @@ impl App {
         self.dirty = value;
     }
     pub fn dispatch(&mut self, kind: EventKind, x: i32, y: i32) {
-        self.dispatch_to(self.controller_idx, kind, x, y);
+        self.dispatcher.dispatch(kind, x, y);
+        self.dirty = true;
     }
     pub fn dispatch_to(&mut self, controller_idx: usize, kind: EventKind, x: i32, y: i32) {
-        let final_x = if x < 0 { 0 } else { x as usize };
-        let final_y = if y < 0 { 0 } else { y as usize };
-        self.controllers[controller_idx].dispatch(&self.screen, &kind, final_x, final_y);
+        self.dispatcher.dispatch_to(controller_idx, kind, x, y);
         self.dirty = true;
     }
 }
