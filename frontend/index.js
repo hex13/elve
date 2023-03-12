@@ -1,6 +1,5 @@
 // TODO pass count to Wasm
 const count = 3000;
-const componentsPerVertex = 2;
 const featureDrawingEditor = true;
 
 import {EventKind} from './pkg/elve.js';
@@ -9,6 +8,7 @@ import {initEngine} from './init-engine';
 import {createEventHandlers} from './canvas-events.js';
 import {Renderer} from './renderer.js';
 import {createShader} from './shaders';
+import {FireworksRenderer} from './fireworks';
 
 import * as gui from './gui/gui';
 
@@ -37,8 +37,7 @@ const renderer = new Renderer();
 const { gl } = renderer.init(canvas);
 const shader = createShader(gl);
 const { program, uniforms, attributes } = shader;
-const buffer = gl.createBuffer();
-const colorBuffer = gl.createBuffer();
+
 
 const quad = renderer.createBuffer(new Float32Array([
     -1.0, -1.0,
@@ -56,7 +55,7 @@ let texture = renderer.createTexture(canvas.width, canvas.height);
 drawingEditor.textures = drawingEditor.layers.map(() => renderer.createTexture(canvas.width, canvas.height));
 
 const textureFramebuffer = gl.createFramebuffer();
-
+const fireworksRenderer = new FireworksRenderer(gl, wasmPositions, colors);
 
 function renderQuad() {
     gl.uniform1i(uniforms.screen, 0);
@@ -73,39 +72,7 @@ function renderQuad() {
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 }
-function renderFireworks(gl, shader) {
 
-    gl.uniform1i(shader.uniforms.pass, shaderConstants.MODE_COLOR);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-
-
-    const particles = wasmPositions;
-
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, particles, gl.DYNAMIC_DRAW);
-
-    const aPosition = shader.attributes.aPosition;
-    gl.vertexAttribPointer(aPosition, componentsPerVertex, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(aPosition);
-
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.DYNAMIC_DRAW);
-
-    const aColor = shader.attributes.aColor;
-
-    gl.vertexAttribPointer(aColor, 4 /*rgba*/, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(aColor);
-
-
-    gl.drawArrays(gl.POINTS, 0, count);
-
-
-}
 
 function renderDrawingEditor() {
     if (!featureDrawingEditor) return;
@@ -141,7 +108,7 @@ const fpsEl = document.getElementById('fps');
 
     renderQuad();
 
-    renderFireworks(gl, shader);
+    fireworksRenderer.render(shader);
 
 
     gl.uniform1i(uniforms.pass, shaderConstants.MODE_BLOOM);
