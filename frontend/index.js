@@ -1,6 +1,5 @@
 // TODO pass count to Wasm
 const count = 3000;
-const featureDrawingEditor = true;
 
 import {EventKind} from './pkg/elve.js';
 import {shaderConstants} from './shaders';
@@ -9,6 +8,7 @@ import {createEventHandlers} from './canvas-events.js';
 import {Renderer} from './renderer.js';
 import {createShader} from './shaders';
 import {FireworksRenderer} from './fireworks';
+import {DrawingEditorRenderer} from './drawingEditor';
 
 import * as gui from './gui/gui';
 
@@ -56,28 +56,11 @@ let texture = renderer.createTexture(canvas.width, canvas.height);
 drawingEditor.textures = drawingEditor.layers.map(() => renderer.createTexture(canvas.width, canvas.height));
 
 const fireworksRenderer = new FireworksRenderer(gl, wasmPositions, colors);
+const drawingEditorRenderer = new DrawingEditorRenderer(
+    gl, mainApp, renderer, quad, drawingEditor, canvas.width, canvas.height
+);
 
 
-
-
-function renderDrawingEditor() {
-    if (!featureDrawingEditor) return;
-    const isDirty = mainApp.dirty();
-
-    gl.uniform1i(uniforms.pass, shaderConstants.MODE_TEXTURE);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.uniform1i(uniforms.screen, 0);
-
-    for (let i = 0; i < drawingEditor.layers.length; i++) {
-        gl.bindTexture(gl.TEXTURE_2D, drawingEditor.textures[i]);
-        const layer = drawingEditor.layers[layerOrder[i]];
-        if (isDirty)
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, layer);
-        renderer.render(shader, quad);
-    }
-    mainApp.set_dirty(false);
-
-}
 let fps = 0;
 let maxFpsCounter = 100;
 let lastFpsTime = Date.now();
@@ -92,14 +75,15 @@ const fpsEl = document.getElementById('fps');
     });
 
     gl.uniform1i(uniforms.pass, shaderConstants.MODE_BLOOM);
-
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(uniforms.screen, 0);
     renderer.render(shader, quad);
+
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, null);
-    renderDrawingEditor();
+    drawingEditorRenderer.render(shader);
+
     fps++;
     if (fps == maxFpsCounter) {
         fps = 0;
