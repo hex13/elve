@@ -8,7 +8,7 @@ import {shaderConstants} from './shaders';
 import {initEngine} from './init-engine';
 import {createEventHandlers} from './canvas-events.js';
 import {Renderer} from './renderer.js';
-import {createProgram} from './shaders';
+import {createShader} from './shaders';
 
 import * as gui from './gui/gui';
 
@@ -35,8 +35,8 @@ function init({ mainApp, wasmPositions, drawingEditor, colors }) {
 
 const renderer = new Renderer();
 const { gl } = renderer.init(canvas);
-const { program, uniforms, attributes } = createProgram(gl);
-
+const shader = createShader(gl);
+const { program, uniforms, attributes } = shader;
 const buffer = gl.createBuffer();
 const colorBuffer = gl.createBuffer();
 
@@ -73,9 +73,9 @@ function renderQuad() {
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 }
-function renderFireworks() {
+function renderFireworks(gl, shader) {
 
-    gl.uniform1i(uniforms.pass, shaderConstants.MODE_COLOR);
+    gl.uniform1i(shader.uniforms.pass, shaderConstants.MODE_COLOR);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.activeTexture(gl.TEXTURE1);
@@ -88,7 +88,7 @@ function renderFireworks() {
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, particles, gl.DYNAMIC_DRAW);
 
-    const aPosition = attributes.aPosition;
+    const aPosition = shader.attributes.aPosition;
     gl.vertexAttribPointer(aPosition, componentsPerVertex, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aPosition);
 
@@ -96,7 +96,7 @@ function renderFireworks() {
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, colors, gl.DYNAMIC_DRAW);
 
-    const aColor = attributes.aColor;
+    const aColor = shader.attributes.aColor;
 
     gl.vertexAttribPointer(aColor, 4 /*rgba*/, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aColor);
@@ -141,7 +141,7 @@ const fpsEl = document.getElementById('fps');
 
     renderQuad();
 
-    renderFireworks();
+    renderFireworks(gl, shader);
 
 
     gl.uniform1i(uniforms.pass, shaderConstants.MODE_BLOOM);

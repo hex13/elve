@@ -76,7 +76,7 @@ const shaderSources = {
     `,
 };
 
-export function createProgram(gl) {
+export function createShader(gl) {
     const shaders = Object.fromEntries(Object.entries(shaderSources).map(([k, source]) => {
         const shader = gl.createShader(gl[k]);
         gl.shaderSource(shader, source);
