@@ -29,4 +29,19 @@ export class Renderer {
         gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
         return buffer;
     }
+    createRenderable(data, componentsPerVertex) {
+        return {
+            buffer: this.createBuffer(data),
+            componentsPerVertex,
+            count: data.length / componentsPerVertex,
+        };
+    }
+    render(shader, renderable) {
+        const gl = this.gl;
+        gl.bindBuffer(gl.ARRAY_BUFFER, renderable.buffer);
+        gl.vertexAttribPointer(shader.attributes.aPosition, renderable.componentsPerVertex, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(shader.attributes.aPosition);
+        gl.drawArrays(gl.TRIANGLES, 0, renderable.count);
+    }
+
 }

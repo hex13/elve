@@ -39,21 +39,15 @@ const shader = createShader(gl);
 const { program, uniforms, attributes } = shader;
 
 
-const quad = renderer.createBuffer(new Float32Array([
+const quad = renderer.createRenderable(new Float32Array([
     -1.0, -1.0,
     1.0, -1.0,
     1.0, 1.0,
     1.0, 1.0,
     -1.0, 1.0,
     -1.0, -1.0,
-]));
+]), 2);
 
-function renderQuad(shader) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-    gl.vertexAttribPointer(shader.attributes.aPosition, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(shader.attributes.aPosition);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-}
 
 gl.useProgram(program);
 
@@ -80,7 +74,7 @@ function renderDrawingEditor() {
         const layer = drawingEditor.layers[layerOrder[i]];
         if (isDirty)
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, layer);
-        renderQuad(shader);
+        renderer.render(shader, quad);
     }
     mainApp.set_dirty(false);
 
@@ -97,7 +91,7 @@ const fpsEl = document.getElementById('fps');
 
 
     gl.uniform1i(uniforms.pass, shaderConstants.MODE_CLEAN_WITH_TRAILS);
-    renderQuad(shader);
+    renderer.render(shader, quad);
 
     fireworksRenderer.render(shader);
 
@@ -109,7 +103,7 @@ const fpsEl = document.getElementById('fps');
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(uniforms.screen, 0);
-    renderQuad(shader);
+    renderer.render(shader, quad);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, null);
     renderDrawingEditor();
