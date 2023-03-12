@@ -9,6 +9,7 @@ export class Renderer {
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         this.gl = gl;
+        this.textureFramebuffer = gl.createFramebuffer();
         return this;
     }
     createTexture(width, height) {
@@ -42,6 +43,16 @@ export class Renderer {
         gl.vertexAttribPointer(shader.attributes.aPosition, renderable.componentsPerVertex, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(shader.attributes.aPosition);
         gl.drawArrays(gl.TRIANGLES, 0, renderable.count);
+    }
+    renderTo(texture, func) {
+        const gl = this.gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.textureFramebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+        func();
+
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
 }

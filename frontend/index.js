@@ -55,7 +55,6 @@ let texture = renderer.createTexture(canvas.width, canvas.height);
 
 drawingEditor.textures = drawingEditor.layers.map(() => renderer.createTexture(canvas.width, canvas.height));
 
-const textureFramebuffer = gl.createFramebuffer();
 const fireworksRenderer = new FireworksRenderer(gl, wasmPositions, colors);
 
 
@@ -86,19 +85,13 @@ const fpsEl = document.getElementById('fps');
 (function update() {
     mainApp.update();
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, textureFramebuffer);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-
-    gl.uniform1i(uniforms.pass, shaderConstants.MODE_CLEAN_WITH_TRAILS);
-    renderer.render(shader, quad);
-
-    fireworksRenderer.render(shader);
-
+    renderer.renderTo(texture, () => {
+        gl.uniform1i(uniforms.pass, shaderConstants.MODE_CLEAN_WITH_TRAILS);
+        renderer.render(shader, quad);
+        fireworksRenderer.render(shader);
+    });
 
     gl.uniform1i(uniforms.pass, shaderConstants.MODE_BLOOM);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);            
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
