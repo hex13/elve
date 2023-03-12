@@ -58,9 +58,6 @@ const textureFramebuffer = gl.createFramebuffer();
 const fireworksRenderer = new FireworksRenderer(gl, wasmPositions, colors);
 
 function renderQuad() {
-    gl.uniform1i(uniforms.screen, 0);
-    gl.uniform1i(uniforms.prevScreen, 1);
-
 
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
 
@@ -80,11 +77,10 @@ function renderDrawingEditor() {
 
     gl.uniform1i(uniforms.pass, shaderConstants.MODE_TEXTURE);
     gl.activeTexture(gl.TEXTURE0);
-
+    gl.uniform1i(uniforms.screen, 0);
 
     for (let i = 0; i < drawingEditor.layers.length; i++) {
         gl.bindTexture(gl.TEXTURE_2D, drawingEditor.textures[i]);
-
         const layer = drawingEditor.layers[layerOrder[i]];
         if (isDirty)
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, layer);
@@ -105,7 +101,6 @@ const fpsEl = document.getElementById('fps');
 
 
     gl.uniform1i(uniforms.pass, shaderConstants.MODE_CLEAN_WITH_TRAILS);
-
     renderQuad();
 
     fireworksRenderer.render(shader);
@@ -117,7 +112,7 @@ const fpsEl = document.getElementById('fps');
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
-
+    gl.uniform1i(uniforms.screen, 0);
     renderQuad();
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, null);

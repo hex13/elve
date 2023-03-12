@@ -25,7 +25,6 @@ const shaderSources = {
     FRAGMENT_SHADER:  /*glsl*/`
     precision highp float;
     uniform sampler2D screen;
-    uniform sampler2D prevScreen;
     uniform highp int pass;
     varying highp vec4 color;
     varying highp vec2 position;
@@ -91,7 +90,6 @@ export function createShader(gl) {
 
     const uniforms = {
         screen: gl.getUniformLocation(program, 'screen'),
-        prevScreen: gl.getUniformLocation(program, 'prevScreen'),
         pass: gl.getUniformLocation(program, 'pass'),
     };
 
