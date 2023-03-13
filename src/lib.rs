@@ -8,6 +8,7 @@ mod events;
 use events::*;
 mod common;
 use common::*;
+mod tilemap;
 
 mod dispatcher;
 use dispatcher::*;
