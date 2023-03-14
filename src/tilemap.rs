@@ -18,18 +18,12 @@ impl<Tile> TileMap<Tile> where Tile: Clone {
         Some(y * self.width + x)
     }
     fn get(&self, x: usize, y: usize) -> Option<&Tile> {
-        if let Some(idx) = self.idx(x, y) {
-            return Some(&self.data[idx]);
-        }
-        None
+        return Some(&self.data[self.idx(x, y)?]);
     }
     fn set(&mut self, x: usize, y: usize, value: Tile) -> Result<(),()> {
-        if let Some(idx) = self.idx(x, y) {
-            self.data[idx] = value;
-            Ok(())
-        } else {
-            Err(())
-        }
+        let idx = self.idx(x, y).ok_or(())?;
+        self.data[idx] = value;
+        Ok(())
     }
 }
 
