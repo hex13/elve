@@ -12,13 +12,13 @@ struct RadiateIterator<'a, Tile> {
     center_y: usize,
     radius: usize,
     max_radius: usize,
-    tile_map: &'a TileMap<Tile>,
+    get: Box<dyn Fn(usize, usize) -> Option<&'a Tile> + 'a>,
     i: usize,
 }
 impl<'a, Tile> Iterator for RadiateIterator<'a, Tile> where Tile: Clone {
     type Item = (usize, usize, &'a Tile);
     fn next(&mut self) -> Option<Self::Item> {
-        let current = Some((self.x, self.y, self.tile_map.get(self.x, self.y)?));
+        let current = Some((self.x, self.y, (self.get)(self.x, self.y)?));
         if self.radius > self.max_radius {
             return None;
         }
@@ -64,7 +64,12 @@ impl<Tile> TileMap<Tile> where Tile: Clone {
         Ok(())
     }
     fn radiate(&self, x: usize, y: usize, max_radius: usize) -> RadiateIterator<Tile> {
-        RadiateIterator {center_x: x, center_y: y, x, y, tile_map: self, radius: 0, max_radius, i: 0}
+        RadiateIterator {
+            center_x: x, center_y: y, x, y, radius: 0, max_radius, i: 0,
+            get: Box::new(|x, y| {
+                return self.get(x, y);
+            }),
+        }
     }
 }
 
