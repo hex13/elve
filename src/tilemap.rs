@@ -5,6 +5,44 @@ struct TileMap<Tile> {
     default_value: Tile,
 }
 
+struct RadiateIterator<'a, Tile> {
+    x: usize,
+    y: usize,
+    center_x: usize,
+    center_y: usize,
+    radius: usize,
+    max_radius: usize,
+    tile_map: &'a TileMap<Tile>,
+    i: usize,
+}
+impl<'a, Tile> Iterator for RadiateIterator<'a, Tile> where Tile: Clone {
+    type Item = (usize, usize, &'a Tile);
+    fn next(&mut self) -> Option<Self::Item> {
+        let current = Some((self.x, self.y, self.tile_map.get(self.x, self.y)?));
+        if self.radius > self.max_radius {
+            return None;
+        }
+        if self.radius == 0 || self.i >= self.radius * 8 - 1 {
+            self.radius += 1;
+            self.x = self.center_x - self.radius;
+            self.y = self.center_y - self.radius;
+            self.i = 0;
+        } else {
+            match self.i / (self.radius * 2) {
+                0 => self.x += 1,
+                1 => self.y += 1,
+                2 => self.x -= 1,
+                3 => self.y -= 1,
+                _ => {}
+            }
+            self.i += 1;
+        }
+
+        return current;
+
+    }
+}
+
 impl<Tile> TileMap<Tile> where Tile: Clone {
     fn new(width: usize, height: usize, default_value: Tile) -> TileMap<Tile> {
         let mut data = Vec::new();
@@ -24,6 +62,9 @@ impl<Tile> TileMap<Tile> where Tile: Clone {
         let idx = self.idx(x, y).ok_or(())?;
         self.data[idx] = value;
         Ok(())
+    }
+    fn radiate(&self, x: usize, y: usize, max_radius: usize) -> RadiateIterator<Tile> {
+        RadiateIterator {center_x: x, center_y: y, x, y, tile_map: self, radius: 0, max_radius, i: 0}
     }
 }
 
@@ -68,5 +109,61 @@ mod tests {
         let res = tile_map.set(1, 3, 100);
         assert_eq!(res, Ok(()));
     }
+    #[test]
+    fn radiate() {
+        let tile_map = TileMap::new(20, 20, 123);
+
+        let v: Vec<(usize, usize, &i32)> = tile_map.radiate(5, 5, 0).collect();
+        assert_eq!(v[0], (5, 5, &123));
+        assert_eq!(v.len(), 1);
+
+        let v: Vec<(usize, usize, &i32)> = tile_map.radiate(5, 5, 1).collect();
+
+        assert_eq!(v[0], (5, 5, &123));
+        assert_eq!(v[1], (4, 4, &123));
+        assert_eq!(v[2], (5, 4, &123));
+        assert_eq!(v[3], (6, 4, &123));
+        assert_eq!(v[4], (6, 5, &123));
+        assert_eq!(v[5], (6, 6, &123));
+        assert_eq!(v[6], (5, 6, &123));
+        assert_eq!(v[7], (4, 6, &123));
+        assert_eq!(v[8], (4, 5, &123));
+        assert_eq!(v.len(), 9);
+
+        let v: Vec<(usize, usize, &i32)> = tile_map.radiate(10, 10, 2).collect();
+        assert_eq!(v[0], (10, 10, &123));
+
+        assert_eq!(v[1], (9, 9, &123));
+        assert_eq!(v[2], (10, 9, &123));
+        assert_eq!(v[3], (11, 9, &123));
+        assert_eq!(v[4], (11, 10, &123));
+        assert_eq!(v[5], (11, 11, &123));
+        assert_eq!(v[6], (10, 11, &123));
+        assert_eq!(v[7], (9, 11, &123));
+        assert_eq!(v[8], (9, 10, &123));
+
+        assert_eq!(v[9], (8, 8, &123));
+        assert_eq!(v[10], (9, 8, &123));
+        assert_eq!(v[11], (10, 8, &123));
+        assert_eq!(v[12], (11, 8, &123));
+        assert_eq!(v[13], (12, 8, &123));
+        assert_eq!(v[14], (12, 9, &123));
+        assert_eq!(v[15], (12, 10, &123));
+        assert_eq!(v[16], (12, 11, &123));
+        assert_eq!(v[17], (12, 12, &123));
+        assert_eq!(v[18], (11, 12, &123));
+        assert_eq!(v[19], (10, 12, &123));
+        assert_eq!(v[20], (9, 12, &123));
+        assert_eq!(v[21], (8, 12, &123));
+        assert_eq!(v[22], (8, 11, &123));
+        assert_eq!(v[23], (8, 10, &123));
+        assert_eq!(v[24], (8, 9, &123));
+
+        assert_eq!(v.len(), 25);
+
+    }
+}
+
+
 
 }
