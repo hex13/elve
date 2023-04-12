@@ -4,9 +4,16 @@ const componentsPerVertex = 2;
 
 export function initEngine(count, init) {
     const pointers = {};
-    window.pass_firework_buffers = function (positions, colors) {
-        pointers.positions = positions;
-        pointers.colors = colors;
+    const schemas = [
+        ['positions', count * componentsPerVertex],
+        ['colors', count * 4],
+    ];
+
+    window.pass_firework_buffers = function (...args) {
+        args.forEach((arg, i) => {
+            const [key] = schemas[i];
+            pointers[key] = arg;
+        });
     }
 
     initElve().then(engine => {
@@ -31,13 +38,16 @@ export function initEngine(count, init) {
         drawingEditor.width = width;
         drawingEditor.height = height;
 
+        const fireworks = {};
+        Object.entries(pointers).forEach(([key, pointer]) => {
+            const [name, length] = schemas.find(schema => schema[0] == key)
+            fireworks[key] = new Float32Array(engine.memory.buffer, pointer, length);
+        });
+
         init({
             mainApp,
             buffers: {
-                fireworks: {
-                    positions: new Float32Array(engine.memory.buffer, pointers.positions, count * componentsPerVertex),
-                    colors: new Float32Array(engine.memory.buffer, pointers.colors, count * 4),
-                }
+                fireworks,
             },
             drawingEditor,
         });
