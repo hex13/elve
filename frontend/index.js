@@ -13,7 +13,7 @@ import {DrawingEditorRenderer} from './drawingEditor';
 import * as gui from './gui/gui';
 
 initEngine(count, init);
-function init({ mainApp, wasmPositions, drawingEditor, colors }) {
+function init({ mainApp, buffers, drawingEditor }) {
     const canvas = document.getElementById('game');
     const handlers = createEventHandlers(canvas, mainApp, drawingEditor);
 
@@ -55,7 +55,7 @@ let texture = renderer.createTexture(canvas.width, canvas.height);
 
 drawingEditor.textures = drawingEditor.layers.map(() => renderer.createTexture(canvas.width, canvas.height));
 
-const fireworksRenderer = new FireworksRenderer(gl, wasmPositions, colors);
+const fireworksRenderer = new FireworksRenderer(gl, buffers.fireworks.positions, buffers.fireworks.colors);
 const drawingEditorRenderer = new DrawingEditorRenderer(
     gl, mainApp, renderer, quad, drawingEditor, canvas.width, canvas.height
 );

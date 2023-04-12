@@ -33,9 +33,13 @@ export function initEngine(count, init) {
 
         init({
             mainApp,
-            wasmPositions: new Float32Array(engine.memory.buffer, pointers.positions, count * componentsPerVertex),
+            buffers: {
+                fireworks: {
+                    positions: new Float32Array(engine.memory.buffer, pointers.positions, count * componentsPerVertex),
+                    colors: new Float32Array(engine.memory.buffer, pointers.colors, count * 4),
+                }
+            },
             drawingEditor,
-            colors: new Float32Array(engine.memory.buffer, pointers.colors, count * 4),
         });
     });
 }
