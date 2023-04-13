@@ -75,13 +75,13 @@ impl Model for ParticleSystemModel {
     fn buffers(&self) -> Vec<(*const f32)>{
         return vec![&self.particle_system_state.borrow().positions[0], &self.particle_system_state.borrow().colors[0]];
     }
+    fn update(&self) {
+        particles::ParticleSystem::update(&mut self.particle_system_state.borrow_mut());
+    }
 }
 
 
 impl ParticleSystemModel {
-    pub fn update(&self) {
-        particles::ParticleSystem::update(&mut self.particle_system_state.borrow_mut())
-    }
     pub fn togglePlay(&self) {
         let mut state = self.particle_system_state.borrow_mut();
         state.autoexplosions = !state.autoexplosions;

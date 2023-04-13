@@ -16,4 +16,5 @@ pub trait Controller {
 
 pub trait Model {
     fn buffers(&self) -> Vec<(*const f32)>;
+    fn update(&self);
 }
