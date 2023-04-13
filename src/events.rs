@@ -7,5 +7,6 @@ pub enum EventKind {
     PointerUp = 3,
     TogglePlay = 100,
     ChangeColor = 200,
+    Interact = 300,
 }
 

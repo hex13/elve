@@ -20,19 +20,19 @@ impl Controller for FireworksController {
         let ndc_y = -((y as f32 / screen.height as f32) * 2.0 - 1.0);
         match kind {
             EventKind::PointerDown => {
-                self.model.create_explosion_at(ndc_x, ndc_y);
+                self.model.act(Action {kind: EventKind::Interact, x: ndc_x, y: ndc_y});
                 self.pointer_down = true;
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    self.model.create_explosion_at(ndc_x, ndc_y);
+                    self.model.act(Action {kind: EventKind::Interact, x: ndc_x, y: ndc_y});
                 }
             }
             EventKind::PointerUp => {
                 self.pointer_down = false;
             }
             EventKind::TogglePlay => {
-                self.model.togglePlay();
+                self.model.act(Action {kind: EventKind::TogglePlay, x: ndc_x, y: ndc_y});
             }
             _ => ()
         }
@@ -60,8 +60,6 @@ impl FireworksController {
 
 
 
-
-
 pub enum Resource {
     ParticleSystem(particles::ParticleSystem),
 }
@@ -78,19 +76,19 @@ impl Model for ParticleSystemModel {
     fn update(&self) {
         particles::ParticleSystem::update(&mut self.particle_system_state.borrow_mut());
     }
-}
-
-
-impl ParticleSystemModel {
-    pub fn togglePlay(&self) {
-        let mut state = self.particle_system_state.borrow_mut();
-        state.autoexplosions = !state.autoexplosions;
+    fn act(&self, action: Action) {
+        match action.kind {
+            EventKind::TogglePlay => {
+                let mut state = self.particle_system_state.borrow_mut();
+                state.autoexplosions = !state.autoexplosions;
+            }
+            EventKind::Interact => {
+                particles::ParticleSystem::create_explosion_at(&mut self.particle_system_state.borrow_mut(), action.x, action.y);
+            }
+            _ => {}
+        }
     }
-    pub fn create_explosion_at(&self, x: f32, y: f32) {
-        particles::ParticleSystem::create_explosion_at(&mut self.particle_system_state.borrow_mut(), x, y)
-    }
 }
-
 
 
 pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
