@@ -14,27 +14,25 @@ mod dispatcher;
 use dispatcher::*;
 
 
-
-
 impl Controller for FireworksController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         let ndc_x = (x as f32 / screen.width as f32) * 2.0 - 1.0;
         let ndc_y = -((y as f32 / screen.height as f32) * 2.0 - 1.0);
         match kind {
             EventKind::PointerDown => {
-                self.model.borrow_mut().create_explosion_at(ndc_x, ndc_y);
+                self.model.borrow().create_explosion_at(ndc_x, ndc_y);
                 self.pointer_down = true;
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    self.model.borrow_mut().create_explosion_at(ndc_x, ndc_y);
+                    self.model.borrow().create_explosion_at(ndc_x, ndc_y);
                 }
             }
             EventKind::PointerUp => {
                 self.pointer_down = false;
             }
             EventKind::TogglePlay => {
-                self.model.borrow_mut().togglePlay();
+                self.model.borrow().togglePlay();
             }
             _ => ()
         }
@@ -70,25 +68,26 @@ pub enum Resource {
 
 
 pub struct ParticleSystemModel {
-    particle_system_state: particles::ParticleSystemState,
+    particle_system_state: RefCell<particles::ParticleSystemState>,
 }
 
 impl Model for ParticleSystemModel {
     fn buffers(&self) -> Vec<(*const f32)>{
-        return vec![&self.particle_system_state.positions[0], &self.particle_system_state.colors[0]];
+        return vec![&self.particle_system_state.borrow().positions[0], &self.particle_system_state.borrow().colors[0]];
     }
 }
 
 
 impl ParticleSystemModel {
-    pub fn update(&mut self) {
-        particles::ParticleSystem::update(&mut self.particle_system_state)
+    pub fn update(&self) {
+        particles::ParticleSystem::update(&mut self.particle_system_state.borrow_mut())
     }
-    pub fn togglePlay(&mut self) {
-        self.particle_system_state.autoexplosions = !self.particle_system_state.autoexplosions;
+    pub fn togglePlay(&self) {
+        let mut state = self.particle_system_state.borrow_mut();
+        state.autoexplosions = !state.autoexplosions;
     }
-    pub fn create_explosion_at(&mut self, x: f32, y: f32) {
-        particles::ParticleSystem::create_explosion_at(&mut self.particle_system_state, x, y)
+    pub fn create_explosion_at(&self, x: f32, y: f32) {
+        particles::ParticleSystem::create_explosion_at(&mut self.particle_system_state.borrow_mut(), x, y)
     }
 }
 
@@ -101,7 +100,7 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
     let velocities = vec![0.0; count * 2];
     let colors = vec![0.0; count * 4];
     let explosions = Vec::new();
-    let particle_system_state = particles::ParticleSystemState { count, positions, velocities, colors, explosions, autoexplosions: false };
+    let particle_system_state = RefCell::new(particles::ParticleSystemState { count, positions, velocities, colors, explosions, autoexplosions: false });
 
     ParticleSystemModel {
         particle_system_state,
@@ -160,7 +159,7 @@ impl App {
         self.drawing_editor.borrow().pixels(layer_idx)
     }
     pub fn update(&mut self) {
-        self.fireworks.borrow_mut().update();
+        self.fireworks.borrow().update();
     }
     pub fn set_controller(&mut self,  controller_idx: usize) {
         self.dispatcher.set_controller(controller_idx);
