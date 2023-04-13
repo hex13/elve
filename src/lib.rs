@@ -20,19 +20,19 @@ impl Controller for FireworksController {
         let ndc_y = -((y as f32 / screen.height as f32) * 2.0 - 1.0);
         match kind {
             EventKind::PointerDown => {
-                self.model.borrow().create_explosion_at(ndc_x, ndc_y);
+                self.model.create_explosion_at(ndc_x, ndc_y);
                 self.pointer_down = true;
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    self.model.borrow().create_explosion_at(ndc_x, ndc_y);
+                    self.model.create_explosion_at(ndc_x, ndc_y);
                 }
             }
             EventKind::PointerUp => {
                 self.pointer_down = false;
             }
             EventKind::TogglePlay => {
-                self.model.borrow().togglePlay();
+                self.model.togglePlay();
             }
             _ => ()
         }
@@ -49,11 +49,11 @@ extern "C" {
 
 pub struct FireworksController {
     pointer_down: bool,
-    model: Rc<RefCell<ParticleSystemModel>>,
+    model: Rc<ParticleSystemModel>,
 }
 
 impl FireworksController {
-    pub fn new(model: Rc<RefCell<ParticleSystemModel>>) -> FireworksController {
+    pub fn new(model: Rc<ParticleSystemModel>) -> FireworksController {
         FireworksController {pointer_down: false, model}
     }
 }
@@ -114,7 +114,7 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 
 #[wasm_bindgen]
 struct App {
-    fireworks: Rc<RefCell<ParticleSystemModel>>,
+    fireworks: Rc<ParticleSystemModel>,
     drawing_editor: Rc<RefCell<DrawingEditor>>,
     texture: Vec<u8>,
     dirty: bool,
@@ -126,8 +126,8 @@ impl App {
     #[wasm_bindgen(constructor)]
     pub fn new(width: usize, height: usize) -> App {
         let drawing_editor = Rc::new(RefCell::new(drawing_editor::DrawingEditor::new(width, height)));
-        let fireworks = Rc::new(RefCell::new(create_fireworks_model(3000)));
-        for (index, pointer) in fireworks.borrow().buffers().into_iter().enumerate() {
+        let fireworks = Rc::new(create_fireworks_model(3000));
+        for (index, pointer) in fireworks.buffers().into_iter().enumerate() {
             pass_buffer(index, pointer);
         }
 
@@ -159,7 +159,7 @@ impl App {
         self.drawing_editor.borrow().pixels(layer_idx)
     }
     pub fn update(&mut self) {
-        self.fireworks.borrow().update();
+        self.fireworks.update();
     }
     pub fn set_controller(&mut self,  controller_idx: usize) {
         self.dispatcher.set_controller(controller_idx);
