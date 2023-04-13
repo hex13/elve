@@ -68,8 +68,15 @@ pub enum Resource {
     ParticleSystem(particles::ParticleSystem),
 }
 
+
 pub struct ParticleSystemModel {
     particle_system_state: particles::ParticleSystemState,
+}
+
+impl Model for ParticleSystemModel {
+    fn buffers(&self) -> Vec<(*const f32)>{
+        return vec![&self.particle_system_state.positions[0], &self.particle_system_state.colors[0]];
+    }
 }
 
 
@@ -96,7 +103,6 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
     let explosions = Vec::new();
     let particle_system_state = particles::ParticleSystemState { count, positions, velocities, colors, explosions, autoexplosions: false };
 
-    pass_firework_buffers(&particle_system_state.positions[0], &particle_system_state.colors[0]);
     ParticleSystemModel {
         particle_system_state,
     }
@@ -122,7 +128,8 @@ impl App {
     pub fn new(width: usize, height: usize) -> App {
         let drawing_editor = Rc::new(RefCell::new(drawing_editor::DrawingEditor::new(width, height)));
         let fireworks = Rc::new(RefCell::new(create_fireworks_model(3000)));
-
+        let fireworks_buffers = fireworks.borrow().buffers();
+        pass_firework_buffers(fireworks_buffers[0], fireworks_buffers[1]);
         let mut texture = Vec::new();
         for y in 0..=255 {
             for x in 0..=255 {

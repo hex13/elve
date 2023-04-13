@@ -13,3 +13,7 @@ pub struct Screen {
 pub trait Controller {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize);
 }
+
+pub trait Model {
+    fn buffers(&self) -> Vec<(*const f32)>;
+}
