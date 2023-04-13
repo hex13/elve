@@ -9,11 +9,9 @@ export function initEngine(count, init) {
         ['colors', count * 4],
     ];
 
-    window.pass_firework_buffers = function (...args) {
-        args.forEach((arg, i) => {
-            const [key] = schemas[i];
-            pointers[key] = arg;
-        });
+    window.pass_buffer = function (index, pointer) {
+        const [key] = schemas[index];
+        pointers[key] = pointer;
     }
 
     initElve().then(engine => {

@@ -44,7 +44,7 @@ impl Controller for FireworksController {
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace=window)]
-    pub fn pass_firework_buffers(positions: *const f32, colors: *const f32 );
+    pub fn pass_buffer(index: usize, pointer: *const f32);
     #[wasm_bindgen(js_namespace=console)]
     pub fn log(s: String);
 }
@@ -128,8 +128,10 @@ impl App {
     pub fn new(width: usize, height: usize) -> App {
         let drawing_editor = Rc::new(RefCell::new(drawing_editor::DrawingEditor::new(width, height)));
         let fireworks = Rc::new(RefCell::new(create_fireworks_model(3000)));
-        let fireworks_buffers = fireworks.borrow().buffers();
-        pass_firework_buffers(fireworks_buffers[0], fireworks_buffers[1]);
+        for (index, pointer) in fireworks.borrow().buffers().into_iter().enumerate() {
+            pass_buffer(index, pointer);
+        }
+
         let mut texture = Vec::new();
         for y in 0..=255 {
             for x in 0..=255 {
