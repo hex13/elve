@@ -92,8 +92,8 @@ impl Controller for DrawingEditorController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         if let Some(action) = self.transform_input(screen, kind, x, y) {
             let thickness = 5;
-            if let ActionPayload::DrawData(x0, y0, x1, y1, color) = action.payload {
-                self.model.borrow_mut().draw_line(0, x0, y0, x1, y1, thickness, color);
+            if let ActionPayload::DrawData(layer, x0, y0, x1, y1, color) = action.payload {
+                self.model.borrow_mut().draw_line(layer, x0, y0, x1, y1, thickness, color);
             }
         }
     }
@@ -107,7 +107,7 @@ impl Controller for DrawingEditorController {
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    action = Some(Action {kind: EventKind::Interact, x: 0.0, y: 0.0, payload: ActionPayload::DrawData(self.x0, self.y0, x, y, self.color)});
+                    action = Some(Action {kind: EventKind::Interact, x: 0.0, y: 0.0, payload: ActionPayload::DrawData(0, self.x0, self.y0, x, y, self.color)});
                     self.x0 = x;
                     self.y0 = y;
                 }
@@ -137,11 +137,20 @@ pub struct DrawRectController {
 
 impl Controller for DrawRectController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
+        if let Some(action) = self.transform_input(screen, kind, x, y) {
+            self.model.borrow_mut().clear(1);
+            if let ActionPayload::DrawData(layer, x0, y0, x1, y1, color) = action.payload {
+                self.model.borrow_mut().draw_rect(layer, x0, y0, x1, y1, color);
+            }
+        }
+    }
+    fn transform_input(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) -> Option<Action> {
         let min_x = cmp::min(self.x0, x);
         let min_y = cmp::min(self.y0, y);
         let max_x = cmp::max(self.x0, x);
         let max_y = cmp::max(self.y0, y);
         let color = [1.0, 1.0, 1.0, 1.0];
+        let mut action = None;
         match kind {
             EventKind::PointerDown => {
                 self.pointer_down = true;
@@ -150,18 +159,16 @@ impl Controller for DrawRectController {
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    let mut model = self.model.borrow_mut();
-                    model.clear(1);
-                    model.draw_rect(1, min_x, min_y, max_x - min_x, max_y - min_y, color);
+                    action = Some(Action { kind: EventKind::Interact, x: 0.0, y: 0.0, payload: ActionPayload::DrawData(1, min_x, min_y, max_x - min_x, max_y - min_y, color)});
                 }
             }
             EventKind::PointerUp => {
                 self.pointer_down = false;
-                self.model.borrow_mut().clear(1);
-                self.model.borrow_mut().draw_rect(0, min_x, min_y, max_x - min_x, max_y - min_y, color);
+                action = Some(Action { kind: EventKind::Interact, x: 0.0, y: 0.0, payload: ActionPayload::DrawData(0, min_x, min_y, max_x - min_x, max_y - min_y, color)});
             }
             _ => ()
         }
+        return action;
     }
 
 }

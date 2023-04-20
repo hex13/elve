@@ -18,7 +18,7 @@ pub trait Controller {
 }
 
 pub enum ActionPayload {
-    DrawData(usize, usize, usize, usize, Color),
+    DrawData(usize, usize, usize, usize, usize, Color),
     Empty,
 }
 pub struct Action {
