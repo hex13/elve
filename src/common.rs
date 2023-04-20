@@ -12,6 +12,9 @@ pub struct Screen {
 
 pub trait Controller {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize);
+    fn transform_input(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) -> Option<Action> {
+        None
+    }
 }
 
 pub struct Action {

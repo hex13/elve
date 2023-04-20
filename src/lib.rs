@@ -14,27 +14,47 @@ mod dispatcher;
 use dispatcher::*;
 
 
+pub struct FireworksController {
+    pointer_down: bool,
+    model: Rc<ParticleSystemModel>,
+}
+
+impl FireworksController {
+    pub fn new(model: Rc<ParticleSystemModel>) -> FireworksController {
+        FireworksController {pointer_down: false, model}
+    }
+}
+
 impl Controller for FireworksController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
+        if let Some(action) = self.transform_input(screen, kind, x, y) {
+            self.model.act(action);
+        }
+    }
+    fn transform_input(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) -> Option<Action> {
         let ndc_x = (x as f32 / screen.width as f32) * 2.0 - 1.0;
         let ndc_y = -((y as f32 / screen.height as f32) * 2.0 - 1.0);
+
         match kind {
             EventKind::PointerDown => {
-                self.model.act(Action {kind: EventKind::Interact, x: ndc_x, y: ndc_y});
                 self.pointer_down = true;
+                Some(Action {kind: EventKind::Interact, x: ndc_x, y: ndc_y})
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    self.model.act(Action {kind: EventKind::Interact, x: ndc_x, y: ndc_y});
+                    Some(Action {kind: EventKind::Interact, x: ndc_x, y: ndc_y})
+                } else {
+                    None
                 }
             }
             EventKind::PointerUp => {
                 self.pointer_down = false;
+                None
             }
             EventKind::TogglePlay => {
-                self.model.act(Action {kind: EventKind::TogglePlay, x: ndc_x, y: ndc_y});
+                Some(Action {kind: EventKind::TogglePlay, x: ndc_x, y: ndc_y})
             }
-            _ => ()
+            _ => None
         }
     }
 }
@@ -47,16 +67,6 @@ extern "C" {
     pub fn log(s: String);
 }
 
-pub struct FireworksController {
-    pointer_down: bool,
-    model: Rc<ParticleSystemModel>,
-}
-
-impl FireworksController {
-    pub fn new(model: Rc<ParticleSystemModel>) -> FireworksController {
-        FireworksController {pointer_down: false, model}
-    }
-}
 
 
 
