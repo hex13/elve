@@ -38,11 +38,11 @@ impl Controller for FireworksController {
         match kind {
             EventKind::PointerDown => {
                 self.pointer_down = true;
-                Some(Action {kind: EventKind::Interact, x: ndc_x, y: ndc_y})
+                Some(Action {kind: EventKind::Interact, x: ndc_x, y: ndc_y, payload: ActionPayload::Empty})
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    Some(Action {kind: EventKind::Interact, x: ndc_x, y: ndc_y})
+                    Some(Action {kind: EventKind::Interact, x: ndc_x, y: ndc_y, payload: ActionPayload::Empty})
                 } else {
                     None
                 }
@@ -52,7 +52,7 @@ impl Controller for FireworksController {
                 None
             }
             EventKind::TogglePlay => {
-                Some(Action {kind: EventKind::TogglePlay, x: ndc_x, y: ndc_y})
+                Some(Action {kind: EventKind::TogglePlay, x: ndc_x, y: ndc_y, payload: ActionPayload::Empty})
             }
             _ => None
         }

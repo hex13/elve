@@ -90,7 +90,15 @@ impl DrawingEditorController {
 
 impl Controller for DrawingEditorController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
-        let thickness = 5;
+        if let Some(action) = self.transform_input(screen, kind, x, y) {
+            let thickness = 5;
+            if let ActionPayload::DrawData(x0, y0, x1, y1, color) = action.payload {
+                self.model.borrow_mut().draw_line(0, x0, y0, x1, y1, thickness, color);
+            }
+        }
+    }
+    fn transform_input(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) -> Option<Action> {
+        let mut action = None;
         match kind {
             EventKind::PointerDown => {
                 self.pointer_down = true;
@@ -99,7 +107,7 @@ impl Controller for DrawingEditorController {
             }
             EventKind::PointerMove => {
                 if self.pointer_down {
-                    self.model.borrow_mut().draw_line(0, self.x0, self.y0, x, y, thickness, self.color);
+                    action = Some(Action {kind: EventKind::Interact, x: 0.0, y: 0.0, payload: ActionPayload::DrawData(self.x0, self.y0, x, y, self.color)});
                     self.x0 = x;
                     self.y0 = y;
                 }
@@ -115,6 +123,7 @@ impl Controller for DrawingEditorController {
             }
             _ => ()
         }
+        return action;
     }
 }
 
