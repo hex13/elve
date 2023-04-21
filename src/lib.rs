@@ -28,7 +28,7 @@ impl FireworksController {
 impl Controller for FireworksController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         if let Some(action) = self.transform_input(screen, kind, x, y) {
-            self.model.act(action);
+            self.model.act(&action);
         }
     }
     fn transform_input(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) -> Option<Action> {
@@ -86,7 +86,7 @@ impl Model for ParticleSystemModel {
     fn update(&self) {
         particles::ParticleSystem::update(&mut self.particle_system_state.borrow_mut());
     }
-    fn act(&self, action: Action) {
+    fn act(&self, action: &Action) {
         match action.kind {
             EventKind::TogglePlay => {
                 let mut state = self.particle_system_state.borrow_mut();

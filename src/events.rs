@@ -9,7 +9,8 @@ pub enum EventKind {
     ChangeColor = 200,
     Interact = 300,
     // actions
-    DrawLine = 1000,
-    DrawRectangle = 1001,
+    Draw = 1000,
+    DrawLine = 1001,
+    DrawRectangle = 1002,
 }
 

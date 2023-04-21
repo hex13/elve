@@ -74,6 +74,33 @@ impl DrawingEditor {
         }
     }
 }
+
+impl Model for DrawingEditor {
+    fn buffers(&self) -> Vec<(*const f32)> {
+        Vec::new()
+    }
+    fn update(&self) {
+
+    }
+    fn act_mut(&mut self, action: &Action) {
+        match action.kind {
+            EventKind::DrawLine => {
+                let thickness = 5;
+                if let ActionPayload::DrawData(layer, x0, y0, x1, y1, color) = action.payload {
+                    self.draw_line(layer, x0, y0, x1, y1, thickness, color);
+                }
+            }
+            EventKind::DrawRectangle => {
+                self.clear(1);
+                if let ActionPayload::DrawData(layer, x0, y0, x1, y1, color) = action.payload {
+                    self.draw_rect(layer, x0, y0, x1, y1, color);
+                }
+            },
+            _ => {}
+        }
+    }
+}
+
 pub struct DrawingEditorController {
     pointer_down: bool,
     x0: usize,
@@ -91,15 +118,7 @@ impl DrawingEditorController {
 impl Controller for DrawingEditorController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         if let Some(action) = self.transform_input(screen, kind, x, y) {
-            match action.kind {
-                EventKind::DrawLine => {
-                    let thickness = 5;
-                    if let ActionPayload::DrawData(layer, x0, y0, x1, y1, color) = action.payload {
-                        self.model.borrow_mut().draw_line(layer, x0, y0, x1, y1, thickness, color);
-                    }
-                }
-                _ => {}
-            }
+            self.model.borrow_mut().act_mut(&action);
         }
     }
     fn transform_input(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) -> Option<Action> {
@@ -143,15 +162,7 @@ pub struct DrawRectController {
 impl Controller for DrawRectController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
         if let Some(action) = self.transform_input(screen, kind, x, y) {
-            match action.kind {
-                EventKind::DrawRectangle => {
-                    self.model.borrow_mut().clear(1);
-                    if let ActionPayload::DrawData(layer, x0, y0, x1, y1, color) = action.payload {
-                        self.model.borrow_mut().draw_rect(layer, x0, y0, x1, y1, color);
-                    }
-                },
-                _ => {}
-            }
+            self.model.borrow_mut().act_mut(&action);
         }
     }
     fn transform_input(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) -> Option<Action> {
