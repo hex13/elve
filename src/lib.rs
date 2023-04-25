@@ -167,7 +167,9 @@ impl App {
         &self.texture[0]
     }
     pub fn update(&mut self) {
-        self.models[0].update();
+        for model in &self.models {
+            model.update();
+        }
     }
     pub fn set_controller(&mut self,  controller_idx: usize) {
         self.dispatcher.set_controller(controller_idx);
