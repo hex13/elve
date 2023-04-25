@@ -123,7 +123,6 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 
 #[wasm_bindgen]
 struct App {
-    models: Vec<Box<dyn Model>>,
     texture: Vec<u8>,
     dirty: bool,
     dispatcher: Dispatcher,
@@ -152,24 +151,23 @@ impl App {
                 texture.push(255);
             }
         }
+        let controllers: Vec<Box<dyn Controller>> = vec![
+            Box::new(FireworksController::new()),
+            Box::new(drawing_editor::DrawRectController::new()),
+            Box::new(drawing_editor::DrawingEditorController::new()),
+        ];
+        let modelIndices = vec![0, 1, 1];
         App {
             texture,
-            dispatcher: Dispatcher::new(vec![
-                Box::new(FireworksController::new()),
-                Box::new(drawing_editor::DrawRectController::new()),
-                Box::new(drawing_editor::DrawingEditorController::new()),
-            ], Screen {width, height}),
+            dispatcher: Dispatcher::new(controllers, modelIndices, models, Screen {width, height}),
             dirty: true,
-            models,
         }
     }
     pub fn texture_pixels(&self) -> *const u8 {
         &self.texture[0]
     }
     pub fn update(&mut self) {
-        for model in &self.models {
-            model.update();
-        }
+        self.dispatcher.update();
     }
     pub fn set_controller(&mut self,  controller_idx: usize) {
         self.dispatcher.set_controller(controller_idx);
@@ -184,15 +182,7 @@ impl App {
         self.dispatch_to(DefaultController, kind, x, y);
     }
     pub fn dispatch_to(&mut self, controller_idx: usize, kind: EventKind, x: i32, y: i32) {
-        if let (ctrl_idx, Some(action)) = self.dispatcher.dispatch(controller_idx, kind, x, y) {
-            let model_idx = match ctrl_idx {
-                0 => 0,
-                1 => 1,
-                2 => 1,
-                _ => panic!("incorrect value for ctrl_idx"),
-            };
-            self.models[model_idx].act(&action);
-        }
+        self.dispatcher.dispatch(controller_idx, kind, x, y);
         self.dirty = true;
     }
 }
