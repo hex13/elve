@@ -194,3 +194,97 @@ impl DrawRectController {
     }
 }
 
+
+struct LineIterator {
+    x0: usize,
+    y0: usize,
+    x1: usize,
+    y1: usize,
+    x: f32,
+    y: f32,
+    alpha: f32,
+}
+
+impl LineIterator {
+    fn new(x0: usize, y0: usize, x1: usize, y1: usize) -> LineIterator {
+        LineIterator { x0, y0, x1, y1, x: x0 as f32, y: y0 as f32, alpha: 0.0}
+    }
+}
+
+impl Iterator for LineIterator {
+    type Item = (usize, usize);
+    fn next(&mut self) -> Option<Self::Item> {
+        let width = (self.x1 as f32 - self.x0 as f32).abs();
+        let height = (self.y1 as f32 - self.y0 as f32).abs();
+        let dist = ((width * width + height * height) as f32).sqrt();
+        let dir_x = if self.x1 >= self.x0 { 1.0 } else { -1.0 };
+        let dir_y = if self.y1 >= self.y0 { 1.0 } else { -1.0 };
+        let current = (
+            ((self.x0 as f32) + dir_x * width * self.alpha) as usize,
+            ((self.y0 as f32) + dir_y * height  * self.alpha) as usize,
+        );
+        let steps = if width > height { width } else { height };
+        if self.alpha > 1.0 {
+            return None;
+        }
+        self.alpha += 1.0 / steps;
+        return Some(current);
+    }
+}
+
+
+mod tests {
+    use super::*;
+    #[test]
+    fn line_iterator_horizontal() {
+        let v: Vec<(usize, usize)> = LineIterator::new(2, 2, 5, 2).collect();
+        assert_eq!(v[0], (2, 2));
+        assert_eq!(v[1], (3, 2));
+        assert_eq!(v[2], (4, 2));
+        assert_eq!(v[3], (5, 2));
+        assert_eq!(v.len(), 4);
+    }
+    #[test]
+    fn line_iterator_horizontal_reverse() {
+        let v: Vec<(usize, usize)> = LineIterator::new(5, 2, 2, 2).collect();
+        println!("{:?}", v);
+        assert_eq!(v[0], (5, 2));
+        assert_eq!(v[1], (4, 2));
+        assert_eq!(v[2], (3, 2));
+        assert_eq!(v[3], (2, 2));
+        assert_eq!(v.len(), 4);
+    }
+    #[test]
+    fn line_iterator_vertical() {
+        let v: Vec<(usize, usize)> = LineIterator::new(3, 2, 3, 7).collect();
+        assert_eq!(v[0], (3, 2));
+        assert_eq!(v[1], (3, 3));
+        assert_eq!(v[2], (3, 4));
+        assert_eq!(v[3], (3, 5));
+        assert_eq!(v[4], (3, 6));
+        assert_eq!(v[5], (3, 7));
+        assert_eq!(v.len(), 6);
+    }
+    #[test]
+    fn line_iterator_diagonal() {
+        let v: Vec<(usize, usize)> = LineIterator::new(1, 0, 5, 4).collect();
+        println!("{:?}", v);
+        assert_eq!(v[0], (1, 0));
+        assert_eq!(v[1], (2, 1));
+        assert_eq!(v[2], (3, 2));
+        assert_eq!(v[3], (4, 3));
+        assert_eq!(v[4], (5, 4));
+        assert_eq!(v.len(), 5);
+    }
+    #[test]
+    fn line_iterator_diagonal_reverse() {
+        let v: Vec<(usize, usize)> = LineIterator::new(5, 4, 1, 0).collect();
+        println!("{:?}", v);
+        assert_eq!(v[0], (5, 4));
+        assert_eq!(v[1], (4, 3));
+        assert_eq!(v[2], (3, 2));
+        assert_eq!(v[3], (2, 1));
+        assert_eq!(v[4], (1, 0));
+        assert_eq!(v.len(), 5);
+    }
+}
