@@ -87,7 +87,7 @@ impl Model for ParticleSystemModel {
     fn update(&self) {
         particles::ParticleSystem::update(&mut self.particle_system_state.borrow_mut());
     }
-    fn act(&self, action: &Action) {
+    fn act(&mut self, action: &Action) {
         match action.kind {
             EventKind::TogglePlay => {
                 let mut state = self.particle_system_state.borrow_mut();
@@ -190,7 +190,6 @@ impl App {
                 _ => panic!("incorrect value for ctrl_idx"),
             };
             self.models[model_idx].act(&action);
-            self.models[model_idx].act_mut(&action);
         }
         self.dirty = true;
     }

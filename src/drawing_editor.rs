@@ -84,7 +84,7 @@ impl Model for DrawingEditor {
     fn update(&self) {
 
     }
-    fn act_mut(&mut self, action: &Action) {
+    fn act(&mut self, action: &Action) {
         match action.kind {
             EventKind::DrawLine => {
                 let thickness = 5;

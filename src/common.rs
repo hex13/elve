@@ -31,6 +31,5 @@ pub struct Action {
 pub trait Model {
     fn buffers(&self) -> Vec<(*const f32, usize)>;
     fn update(&self);
-    fn act(&self, action: &Action) {}
-    fn act_mut(&mut self, action: &Action) {}
+    fn act(&mut self, action: &Action) {}
 }
