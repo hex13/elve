@@ -76,8 +76,10 @@ impl DrawingEditor {
 }
 
 impl Model for DrawingEditor {
-    fn buffers(&self) -> Vec<(*const f32)> {
-        Vec::new()
+    fn buffers(&self) -> Vec<(*const f32, usize)> {
+        self.layers.iter().map(|layer| {
+            ((&layer[0] as *const u8) as *const f32, layer.len())
+        }).collect()
     }
     fn update(&self) {
 
@@ -106,20 +108,16 @@ pub struct DrawingEditorController {
     x0: usize,
     y0: usize,
     color: Color,
-    model: Rc<RefCell<DrawingEditor>>,
 }
 
 impl DrawingEditorController {
-    pub fn new(model: Rc<RefCell<DrawingEditor>>) -> DrawingEditorController {
-        DrawingEditorController {pointer_down: false, model, x0: 0, y0: 0, color: [0.0, 0.0, 0.0, 1.0]}
+    pub fn new() -> DrawingEditorController {
+        DrawingEditorController {pointer_down: false, x0: 0, y0: 0, color: [0.0, 0.0, 0.0, 1.0]}
     }
 }
 
 impl Controller for DrawingEditorController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
-        if let Some(action) = self.transform_input(screen, kind, x, y) {
-            self.model.borrow_mut().act_mut(&action);
-        }
     }
     fn transform_input(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) -> Option<Action> {
         let mut action = None;
@@ -152,7 +150,6 @@ impl Controller for DrawingEditorController {
 }
 
 pub struct DrawRectController {
-    model: Rc<RefCell<DrawingEditor>>,
     pointer_down: bool,
     x0: usize,
     y0: usize,
@@ -161,9 +158,6 @@ pub struct DrawRectController {
 
 impl Controller for DrawRectController {
     fn dispatch(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) {
-        if let Some(action) = self.transform_input(screen, kind, x, y) {
-            self.model.borrow_mut().act_mut(&action);
-        }
     }
     fn transform_input(&mut self, screen: &Screen, kind: &EventKind, x: usize, y: usize) -> Option<Action> {
         let min_x = cmp::min(self.x0, x);
@@ -195,8 +189,8 @@ impl Controller for DrawRectController {
 }
 
 impl DrawRectController {
-    pub fn new(model: Rc<RefCell<DrawingEditor>>) -> DrawRectController {
-        DrawRectController {model, x0: 0, y0: 0, pointer_down: false}
+    pub fn new() -> DrawRectController {
+        DrawRectController {x0: 0, y0: 0, pointer_down: false}
     }
 }
 

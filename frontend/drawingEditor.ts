@@ -8,7 +8,8 @@ export class DrawingEditorRenderer {
     drawingEditor: any;
     width: number;
     height: number;
-    constructor(gl: any, app: any, renderer: any, quad: unknown, drawingEditor: any, w: number, h: number) {
+    model: any;
+    constructor(gl: any, app: any, renderer: any, quad: unknown, drawingEditor: any, w: number, h: number, model: any) {
         this.app = app;
         this.renderer = renderer;
         this.gl = gl;
@@ -16,6 +17,7 @@ export class DrawingEditorRenderer {
         this.height = h;
         this.quad = quad;
         this.drawingEditor = drawingEditor;
+        this.model = model;
     }
     render(shader: any) {
         const gl = this.gl;
@@ -25,10 +27,10 @@ export class DrawingEditorRenderer {
         gl.uniform1i(shader.uniforms.pass, shaderConstants.MODE_TEXTURE);
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(shader.uniforms.screen, 0);
-
-        for (let i = 0; i < this.drawingEditor.layers.length; i++) {
+        const layers = Object.values(this.model.buffers);
+        for (let i = 0; i < layers.length; i++) {
             gl.bindTexture(gl.TEXTURE_2D, this.drawingEditor.textures[i]);
-            const layer = this.drawingEditor.layers[layerOrder[i]];
+            const layer = layers[layerOrder[i]];
             if (isDirty)
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, layer);
             this.renderer.render(shader, this.quad);

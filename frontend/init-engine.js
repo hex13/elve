@@ -3,15 +3,37 @@ import initElve, {App} from './pkg/elve.js';
 const componentsPerVertex = 2;
 
 export function initEngine(count, init) {
-    const pointers = {};
-    const schemas = [
-        ['positions', count * componentsPerVertex],
-        ['colors', count * 4],
+    const models = [
+        {
+            name: 'fireworks',
+            bufferNames: [
+                'positions',
+                'colors',
+            ],
+            BufferType: Float32Array,
+            pointers: {},
+            lengths: {},
+            buffers: {}
+        },
+        {
+            name: 'drawingEditor',
+            bufferNames: [
+                'layer0',
+                'layer1',
+                'layer2',
+            ],
+            BufferType: Uint8Array,
+            pointers: {},
+            lengths: {},
+            buffers: {}
+        }
     ];
 
-    window.pass_buffer = function (index, pointer) {
-        const [key] = schemas[index];
-        pointers[key] = pointer;
+    window.pass_buffer = function (modelIndex, bufferIndex, pointer, length) {
+        const model = models[modelIndex];
+        const key = model.bufferNames[bufferIndex];
+        model.pointers[key] = pointer;
+        model.lengths[key] = length;
     }
 
     initElve().then(engine => {
@@ -28,25 +50,20 @@ export function initEngine(count, init) {
         const mainApp = new App(width, height);
 
         const drawingEditor = {};
-        drawingEditor.layers = [
-            new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(0), width * height * 4),
-            new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(1), width * height * 4),
-            new Uint8Array(engine.memory.buffer, mainApp.drawing_editor_pixels(2), width * height * 4),
-        ];
         drawingEditor.width = width;
         drawingEditor.height = height;
 
         const fireworks = {};
-        Object.entries(pointers).forEach(([key, pointer]) => {
-            const [name, length] = schemas.find(schema => schema[0] == key)
-            fireworks[key] = new Float32Array(engine.memory.buffer, pointer, length);
-        });
 
+        models.forEach(model => {
+            Object.entries(model.pointers).forEach(([key, pointer]) => {
+                const length = model.lengths[key];
+                model.buffers[key] = new model.BufferType(engine.memory.buffer, pointer, length);
+            });
+        });
         init({
             mainApp,
-            buffers: {
-                fireworks,
-            },
+            models: Object.fromEntries(models.map(model => [model.name, model])),
             drawingEditor,
         });
     });
