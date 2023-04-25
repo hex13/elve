@@ -64,8 +64,6 @@ extern "C" {
 }
 
 
-
-
 pub enum Resource {
     ParticleSystem(particles::ParticleSystem),
 }
@@ -101,7 +99,6 @@ impl Model for ParticleSystemModel {
     }
 }
 
-
 pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 
     let unit = 0.2;
@@ -116,11 +113,6 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
     }
 }
 
-
-
-
-
-
 #[wasm_bindgen]
 struct App {
     texture: Vec<u8>,
@@ -132,9 +124,10 @@ struct App {
 impl App {
     #[wasm_bindgen(constructor)]
     pub fn new(width: usize, height: usize) -> App {
-        let drawing_editor = Box::new(drawing_editor::DrawingEditor::new(width, height));
-        let fireworks = Box::new(create_fireworks_model(3000));
-        let models: Vec<Box<dyn Model>> = vec![fireworks, drawing_editor];
+        let models: Vec<Box<dyn Model>> = vec![
+            Box::new(create_fireworks_model(3000)),
+            Box::new(drawing_editor::DrawingEditor::new(width, height)),
+        ];
 
         for (model_idx, model) in models.iter().enumerate() {
             for (index, (pointer, length)) in model.buffers().into_iter().enumerate() {
