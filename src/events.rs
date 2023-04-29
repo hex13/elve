@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
+#[derive(PartialEq)]
 pub enum EventKind {
     PointerDown = 1,
     PointerMove = 2,

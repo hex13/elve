@@ -1,6 +1,7 @@
 use crate::events::*;
 use crate::common::*;
 
+type Listener = fn();
 
 pub struct Dispatcher {
     controllers: Vec<Box<dyn Controller>>,
@@ -8,6 +9,7 @@ pub struct Dispatcher {
     modelIndices: Vec<usize>,
     pub controller_idx: usize,
     screen: Screen,
+    once_listeners: Vec<(EventKind, Listener)>
 }
 
 pub const DefaultController: usize = 123456;
@@ -20,7 +22,11 @@ impl Dispatcher {
             controllers,
             controller_idx: 0,
             screen,
+            once_listeners: Vec::new(),
         }
+    }
+    pub fn once(&mut self, kind: EventKind, handler: Listener) {
+        self.once_listeners.push((kind, handler));
     }
     pub fn set_controller(&mut self,  controller_idx: usize) {
         self.controller_idx = controller_idx;
@@ -42,5 +48,11 @@ impl Dispatcher {
         }  else {
             ctrl.dispatch(&self.screen, &kind, final_x, final_y);
         }
+        for (listener_kind, listener) in self.once_listeners.iter() {
+            if *listener_kind == kind {
+                listener();
+            }
+        }
+        self.once_listeners.retain(|(listener_kind, _)| { *listener_kind != kind });
     }
 }

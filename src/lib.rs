@@ -150,9 +150,11 @@ impl App {
             Box::new(drawing_editor::DrawingEditorController::new()),
         ];
         let modelIndices = vec![0, 1, 1];
+        let dispatcher = Dispatcher::new(controllers, modelIndices, models, Screen {width, height});
+
         App {
             texture,
-            dispatcher: Dispatcher::new(controllers, modelIndices, models, Screen {width, height}),
+            dispatcher,
             dirty: true,
         }
     }
