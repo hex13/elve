@@ -71,22 +71,27 @@ impl<Tile> TileMap<Tile> where Tile: Clone {
     }
 }
 
+
 mod tests {
     use super::*;
+
+    fn create_grid(w: usize, h: usize, default_value: i32) -> TileMap<i32> {
+        TileMap::new(w, h, default_value)
+    }
     #[test]
     fn tile_map_creation() {
-        let tile_map = TileMap::new(3, 2, 0);
+        let tile_map = create_grid(3, 2, 0);
         assert_eq!(tile_map.width, 3);
         assert_eq!(tile_map.height, 2);
     }
     #[test]
     fn tile_map_get_default_value() {
-        let tile_map = TileMap::new(3, 2, 123);
+        let tile_map = create_grid(3, 2, 123);
         assert_eq!(tile_map.get(0, 0), Some(&123));
     }
     #[test]
     fn tile_map_set_then_get() {
-        let mut tile_map = TileMap::new(20, 10, 123);
+        let mut tile_map = create_grid(20, 10, 123);
         let x = 3;
         let y = 5;
         tile_map.set(x, y, 1000);
@@ -96,13 +101,13 @@ mod tests {
     }
     #[test]
     fn get_out_of_bounds() {
-        let mut tile_map = TileMap::new(20, 10, 123);
+        let mut tile_map = create_grid(20, 10, 123);
         assert_eq!(tile_map.get(30, 1), None);
         assert_eq!(tile_map.get(1, 30), None);
     }
     #[test]
     fn set_out_of_bounds() {
-        let mut tile_map = TileMap::new(20, 10, 123);
+        let mut tile_map = create_grid(20, 10, 123);
         let res = tile_map.set(30, 1, 100);
         assert_eq!(res, Err(()));
         let res = tile_map.set(1, 15, 100);
@@ -118,7 +123,7 @@ mod tests {
             return RadiateIterator::new(x, y, max_radius);
         };
 
-        let tile_map = TileMap::new(20, 20, 123);
+        let tile_map = create_grid(20, 20, 123);
 
         let v: Vec<(usize, usize)> = radiate(5, 5, 0).collect();
         assert_eq!(v[0], (5, 5));
