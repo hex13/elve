@@ -56,7 +56,7 @@ models[1].textures = Object.values(models[1].buffers).map(() => renderer.createT
 
 const views = [
     {
-        renderer: new FireworksRenderer(gl, models[0].buffers.positions, models[0].buffers.colors),
+        renderer: new FireworksRenderer(gl, models[0]),
     },
     {
         renderer: new DrawingEditorRenderer(
