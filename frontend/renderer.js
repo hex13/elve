@@ -10,6 +10,14 @@ export class Renderer {
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         this.gl = gl;
         this.textureFramebuffer = gl.createFramebuffer();
+        this.quad = this.createRenderable(new Float32Array([
+            -1.0, -1.0,
+            1.0, -1.0,
+            1.0, 1.0,
+            1.0, 1.0,
+            -1.0, 1.0,
+            -1.0, -1.0,
+        ]), 2);
         return this;
     }
     createTexture(width, height) {

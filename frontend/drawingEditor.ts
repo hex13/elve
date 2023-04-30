@@ -4,17 +4,15 @@ export class DrawingEditorRenderer {
     app: any;
     renderer: any;
     gl: any;
-    quad: unknown;
     width: number;
     height: number;
     model: any;
-    constructor(gl: any, app: any, renderer: any, quad: unknown, w: number, h: number, model: any) {
+    constructor(gl: any, app: any, renderer: any, w: number, h: number, model: any) {
         this.app = app;
         this.renderer = renderer;
         this.gl = gl;
         this.width = w;
         this.height = h;
-        this.quad = quad;
         this.model = model;
     }
     render(shader: any) {
@@ -31,7 +29,7 @@ export class DrawingEditorRenderer {
             const layer = layers[layerOrder[i]];
             if (isDirty)
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, layer);
-            this.renderer.render(shader, this.quad);
+            this.renderer.render(shader, this.renderer.quad);
         }
         this.app.set_dirty(false);
     }

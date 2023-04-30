@@ -39,14 +39,7 @@ const shader = createShader(gl);
 const { program, uniforms, attributes } = shader;
 
 
-const quad = renderer.createRenderable(new Float32Array([
-    -1.0, -1.0,
-    1.0, -1.0,
-    1.0, 1.0,
-    1.0, 1.0,
-    -1.0, 1.0,
-    -1.0, -1.0,
-]), 2);
+
 
 
 gl.useProgram(program);
@@ -60,7 +53,7 @@ const views = [
     },
     {
         renderer: new DrawingEditorRenderer(
-            gl, mainApp, renderer, quad, canvas.width, canvas.height, models[1],
+            gl, mainApp, renderer, canvas.width, canvas.height, models[1],
         )
     },
 ];
@@ -75,7 +68,7 @@ const fpsEl = document.getElementById('fps');
 
     renderer.renderTo(texture, () => {
         gl.uniform1i(uniforms.pass, shaderConstants.MODE_CLEAN_WITH_TRAILS);
-        renderer.render(shader, quad);
+        renderer.render(shader, renderer.quad);
         views[0].renderer.render(shader);
     });
 
@@ -83,7 +76,7 @@ const fpsEl = document.getElementById('fps');
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(uniforms.screen, 0);
-    renderer.render(shader, quad);
+    renderer.render(shader, renderer.quad);
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, null);
