@@ -1,7 +1,7 @@
 use crate::events::*;
 use crate::common::*;
 
-type Listener = fn();
+type Listener = Box<dyn FnMut()>;
 
 pub struct Dispatcher {
     controllers: Vec<Box<dyn Controller>>,
@@ -48,7 +48,7 @@ impl Dispatcher {
         }  else {
             ctrl.dispatch(&self.screen, &kind, final_x, final_y);
         }
-        for (listener_kind, listener) in self.once_listeners.iter() {
+        for (listener_kind, listener) in self.once_listeners.iter_mut() {
             if *listener_kind == kind {
                 listener();
             }
