@@ -47,17 +47,14 @@ gl.useProgram(program);
 let texture = renderer.createTexture(canvas.width, canvas.height);
 models[1].textures = Object.values(models[1].buffers).map(() => renderer.createTexture(canvas.width, canvas.height));
 
-const views = [
-    {
-        renderer: new FireworksRenderer(gl, models[0]),
-    },
-    {
-        renderer: new DrawingEditorRenderer(
-            gl, mainApp, renderer, canvas.width, canvas.height, models[1],
-        )
-    },
-];
-
+const rendererConstructors = {
+    fireworks: FireworksRenderer,
+    drawingEditor: DrawingEditorRenderer,
+};
+const views = models.map(model => {
+    let Constr = Object.hasOwn(rendererConstructors, model.name)? rendererConstructors[model.name] : null;
+    return {renderer: Constr? new Constr(gl, mainApp, renderer, canvas.width, canvas.height, model) : null};
+});
 
 let fps = 0;
 let maxFpsCounter = 100;

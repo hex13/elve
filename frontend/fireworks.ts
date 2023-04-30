@@ -8,7 +8,7 @@ export class FireworksRenderer {
     buffer: unknown;
     colorBuffer: unknown;
     model: any;
-    constructor(gl: any, model: any) {
+    constructor(gl: any, app: any, renderer: any, w: number, h: number, model: any) {
         this.gl = gl;
         this.buffer = gl.createBuffer();
         this.colorBuffer = gl.createBuffer();
