@@ -44,7 +44,6 @@ const { program, uniforms, attributes } = shader;
 
 gl.useProgram(program);
 
-let texture = renderer.createTexture(canvas.width, canvas.height);
 models[1].textures = Object.values(models[1].buffers).map(() => renderer.createTexture(canvas.width, canvas.height));
 
 const rendererConstructors = {
@@ -63,21 +62,11 @@ const fpsEl = document.getElementById('fps');
 (function update() {
     mainApp.update();
 
-    renderer.renderTo(texture, () => {
-        gl.uniform1i(uniforms.pass, shaderConstants.MODE_CLEAN_WITH_TRAILS);
-        renderer.render(shader, renderer.quad);
-        views[0].renderer.render(shader);
-    });
-
-    gl.uniform1i(uniforms.pass, shaderConstants.MODE_BLOOM);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.uniform1i(uniforms.screen, 0);
-    renderer.render(shader, renderer.quad);
-
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    views[1].renderer.render(shader);
+    views.forEach(view => {
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        view.renderer.render(shader);
+    })
 
     fps++;
     if (fps == maxFpsCounter) {

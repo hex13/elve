@@ -8,13 +8,33 @@ export class FireworksRenderer {
     buffer: unknown;
     colorBuffer: unknown;
     model: any;
+    renderer: any;
+    texture: unknown;
     constructor(gl: any, app: any, renderer: any, w: number, h: number, model: any) {
         this.gl = gl;
         this.buffer = gl.createBuffer();
         this.colorBuffer = gl.createBuffer();
         this.model = model;
+        this.renderer = renderer;
+        this.texture = renderer.createTexture(w, h);
     }
     render(shader: any) {
+        const {gl, renderer, texture } = this;
+        const { uniforms } = shader;
+        renderer.renderTo(texture, () => {
+            gl.uniform1i(uniforms.pass, shaderConstants.MODE_CLEAN_WITH_TRAILS);
+            renderer.render(shader, renderer.quad);
+            this._render(shader);
+        });
+
+        gl.uniform1i(uniforms.pass, shaderConstants.MODE_BLOOM);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.uniform1i(uniforms.screen, 0);
+        renderer.render(shader, renderer.quad);
+    }
+
+    _render(shader: any) {
         const gl = this.gl;
         gl.uniform1i(shader.uniforms.pass, shaderConstants.MODE_COLOR);
         gl.activeTexture(gl.TEXTURE0);
