@@ -126,7 +126,7 @@ impl App {
     pub fn new(width: usize, height: usize) -> App {
         let models: Vec<Box<dyn Model>> = vec![
             Box::new(create_fireworks_model(3000)),
-            Box::new(drawing_editor::DrawingEditor::new(width, height)),
+            Box::new(drawing_editor::DrawingEditor::new(width, height, 3)),
         ];
 
         for (model_idx, model) in models.iter().enumerate() {

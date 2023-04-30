@@ -15,23 +15,13 @@ pub struct DrawingEditor {
 }
 
 impl DrawingEditor {
-    pub fn new(width: usize, height: usize) -> DrawingEditor {
-        let mut test_layer = vec![0; width * height * 4 /* rgba */ ];
-        for (i, v) in test_layer.iter_mut().enumerate() {
-            if i % 4 == 3 {
-                *v = 20;
-            } else if i % 4 == 0 {
-                *v = 255;
-            } else {
-                *v = 0;
-            }
+    pub fn new(width: usize, height: usize, layer_count: usize) -> DrawingEditor {
+        let mut layers = Vec::new();
+        for i in 0..layer_count {
+            layers.push(vec![0; width * height * 4 /* rgba */ ]);
         }
         DrawingEditor { 
-            layers: vec![
-                vec![0; width * height * 4 /* rgba */ ],
-                vec![0; width * height * 4 /* rgba */ ],
-                test_layer,
-            ],
+            layers,
             width, height,
         }
     }
