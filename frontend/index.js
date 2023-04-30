@@ -38,13 +38,7 @@ const { gl } = renderer.init(canvas);
 const shader = createShader(gl);
 const { program, uniforms, attributes } = shader;
 
-
-
-
-
 gl.useProgram(program);
-
-models[1].textures = Object.values(models[1].buffers).map(() => renderer.createTexture(canvas.width, canvas.height));
 
 const rendererConstructors = {
     fireworks: FireworksRenderer,
