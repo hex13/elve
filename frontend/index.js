@@ -52,7 +52,7 @@ const quad = renderer.createRenderable(new Float32Array([
 gl.useProgram(program);
 
 let texture = renderer.createTexture(canvas.width, canvas.height);
-drawingEditor.textures = Object.values(models[1].buffers).map(() => renderer.createTexture(canvas.width, canvas.height));
+models[1].textures = Object.values(models[1].buffers).map(() => renderer.createTexture(canvas.width, canvas.height));
 
 const views = [
     {
@@ -60,7 +60,7 @@ const views = [
     },
     {
         renderer: new DrawingEditorRenderer(
-            gl, mainApp, renderer, quad, drawingEditor, canvas.width, canvas.height, models[1],
+            gl, mainApp, renderer, quad, canvas.width, canvas.height, models[1],
         )
     },
 ];
