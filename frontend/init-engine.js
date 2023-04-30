@@ -63,7 +63,7 @@ export function initEngine(count, init) {
         });
         init({
             mainApp,
-            models: Object.fromEntries(models.map(model => [model.name, model])),
+            models,
             drawingEditor,
         });
     });

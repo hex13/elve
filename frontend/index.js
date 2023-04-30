@@ -52,12 +52,18 @@ const quad = renderer.createRenderable(new Float32Array([
 gl.useProgram(program);
 
 let texture = renderer.createTexture(canvas.width, canvas.height);
-drawingEditor.textures = Object.values(models.drawingEditor.buffers).map(() => renderer.createTexture(canvas.width, canvas.height));
+drawingEditor.textures = Object.values(models[1].buffers).map(() => renderer.createTexture(canvas.width, canvas.height));
 
-const fireworksRenderer = new FireworksRenderer(gl, models.fireworks.buffers.positions, models.fireworks.buffers.colors);
-const drawingEditorRenderer = new DrawingEditorRenderer(
-    gl, mainApp, renderer, quad, drawingEditor, canvas.width, canvas.height, models.drawingEditor,
-);
+const views = [
+    {
+        renderer: new FireworksRenderer(gl, models[0].buffers.positions, models[0].buffers.colors),
+    },
+    {
+        renderer: new DrawingEditorRenderer(
+            gl, mainApp, renderer, quad, drawingEditor, canvas.width, canvas.height, models[1],
+        )
+    },
+];
 
 
 let fps = 0;
@@ -70,7 +76,7 @@ const fpsEl = document.getElementById('fps');
     renderer.renderTo(texture, () => {
         gl.uniform1i(uniforms.pass, shaderConstants.MODE_CLEAN_WITH_TRAILS);
         renderer.render(shader, quad);
-        fireworksRenderer.render(shader);
+        views[0].renderer.render(shader);
     });
 
     gl.uniform1i(uniforms.pass, shaderConstants.MODE_BLOOM);
@@ -81,7 +87,7 @@ const fpsEl = document.getElementById('fps');
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, null);
-    drawingEditorRenderer.render(shader);
+    views[1].renderer.render(shader);
 
     fps++;
     if (fps == maxFpsCounter) {
