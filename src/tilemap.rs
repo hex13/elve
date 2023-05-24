@@ -69,6 +69,11 @@ impl<Tile> TileMap<Tile> where Tile: Clone {
         self.data[idx] = value;
         Ok(())
     }
+    pub fn set_slice(&mut self, x: usize, y: usize, value: &[Tile]) -> Result<(),()> {
+        let idx = self.idx(x, y).ok_or(())?;
+        self.data.splice(idx..idx + value.len(), value.iter().cloned());
+        Ok(())
+    }
 }
 
 

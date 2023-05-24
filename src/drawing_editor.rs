@@ -44,10 +44,7 @@ impl DrawingEditor {
                     let g = (color[1] * 255.0) as u8;
                     let b = (color[2] * 255.0) as u8;
                     let a = (color[3] * 255.0) as u8;
-                    layer.set(x_ * 4, inv_y, r);
-                    layer.set(x_ * 4 + 1, inv_y, g);
-                    layer.set(x_ * 4 + 2, inv_y, b);
-                    layer.set(x_ * 4 + 3, inv_y, a);
+                    layer.set_slice(x_ * 4, inv_y, &[r,g,b,a]);
                 }
             }
         }
