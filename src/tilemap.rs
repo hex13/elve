@@ -1,7 +1,7 @@
-struct TileMap<Tile> {
-    width: usize,
-    height: usize,
-    data: Vec<Tile>,
+pub struct TileMap<Tile> {
+    pub width: usize,
+    pub height: usize,
+    pub data: Vec<Tile>,
     default_value: Tile,
 }
 
@@ -50,7 +50,7 @@ impl Iterator for RadiateIterator {
 }
 
 impl<Tile> TileMap<Tile> where Tile: Clone {
-    fn new(width: usize, height: usize, default_value: Tile) -> TileMap<Tile> {
+    pub fn new(width: usize, height: usize, default_value: Tile) -> TileMap<Tile> {
         let mut data = Vec::new();
         data.resize(width * height, default_value.clone());
         TileMap { width, height, default_value, data, }
@@ -61,10 +61,10 @@ impl<Tile> TileMap<Tile> where Tile: Clone {
         }
         Some(y * self.width + x)
     }
-    fn get(&self, x: usize, y: usize) -> Option<&Tile> {
+    pub fn get(&self, x: usize, y: usize) -> Option<&Tile> {
         return Some(&self.data[self.idx(x, y)?]);
     }
-    fn set(&mut self, x: usize, y: usize, value: Tile) -> Result<(),()> {
+    pub fn set(&mut self, x: usize, y: usize, value: Tile) -> Result<(),()> {
         let idx = self.idx(x, y).ok_or(())?;
         self.data[idx] = value;
         Ok(())

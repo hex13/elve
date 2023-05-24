@@ -5,11 +5,12 @@ use std::cell::RefCell;
 
 use crate::events::*;
 use crate::common::*;
+use crate::tilemap::*;
 
 use std::cmp;
 
 pub struct DrawingEditor {
-    pub layers: Vec<Vec<u8>>,
+    pub layers: Vec<TileMap<u8>>,
     width: usize,
     height: usize,
 }
@@ -18,18 +19,15 @@ impl DrawingEditor {
     pub fn new(width: usize, height: usize, layer_count: usize) -> DrawingEditor {
         let mut layers = Vec::new();
         for i in 0..layer_count {
-            layers.push(vec![0; width * height * 4 /* rgba */ ]);
+            layers.push(TileMap::new(width * 4, height, 0));
         }
         DrawingEditor { 
             layers,
             width, height,
         }
     }
-    pub fn pixels(&self, layer_idx: usize) -> *const u8 {
-        &self.layers[layer_idx][0]
-    }
     pub fn clear(&mut self, layer_idx: usize) {
-        self.layers[layer_idx].fill(0);
+        self.layers[layer_idx].data.fill(0);
     }
     pub fn draw_line(&mut self, layer_idx: usize, x0: usize, y0: usize, x1: usize, y1: usize, thickness: usize, color: Color) {
         for (x, y) in LineIterator::new(x0, y0, x1, y1) {
@@ -37,18 +35,19 @@ impl DrawingEditor {
         }
     }
     pub fn draw_rect(&mut self, layer_idx: usize, x: usize, y: usize, width: usize, height: usize, color: Color) {
-        let mut layer = &mut self.layers[layer_idx];
+        let layer = &mut self.layers[layer_idx];
         for x_ in x..x + width {
             for y_ in y..y + height {
                 {
-                    let idx = ((self.height - 1 - y_) * self.width + x_) * 4;
-                    if idx + 3 > layer.len() - 1 {
-                        continue;
-                    }
-                    layer[idx] = (color[0] * 255.0) as u8;
-                    layer[idx + 1] = (color[1] * 255.0) as u8;
-                    layer[idx + 2] = (color[2] * 255.0) as u8;
-                    layer[idx + 3] = (color[3] * 255.0) as u8;
+                    let inv_y = self.height - 1 - y_;
+                    let r = (color[0] * 255.0) as u8;
+                    let g = (color[1] * 255.0) as u8;
+                    let b = (color[2] * 255.0) as u8;
+                    let a = (color[3] * 255.0) as u8;
+                    layer.set(x_ * 4, inv_y, r);
+                    layer.set(x_ * 4 + 1, inv_y, g);
+                    layer.set(x_ * 4 + 2, inv_y, b);
+                    layer.set(x_ * 4 + 3, inv_y, a);
                 }
             }
         }
@@ -58,7 +57,7 @@ impl DrawingEditor {
 impl Model for DrawingEditor {
     fn buffers(&self) -> Vec<(*const f32, usize)> {
         self.layers.iter().map(|layer| {
-            ((&layer[0] as *const u8) as *const f32, layer.len())
+            ((&layer.data[0] as *const u8) as *const f32, layer.data.len())
         }).collect()
     }
     fn update(&self) {
