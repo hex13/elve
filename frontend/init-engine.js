@@ -26,7 +26,19 @@ export function initEngine(count, init) {
             pointers: {},
             lengths: {},
             buffers: {}
-        }
+        },
+        {
+            name: 'drawingEditor',
+            bufferNames: [
+                'layer0',
+                'layer1',
+                'layer2',
+            ],
+            BufferType: Uint8Array,
+            pointers: {},
+            lengths: {},
+            buffers: {}
+        },
     ];
 
     window.pass_buffer = function (modelIndex, bufferIndex, pointer, length) {

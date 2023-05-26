@@ -19,7 +19,7 @@ export class DrawingEditorRenderer {
     }
     render(shader: any) {
         const gl = this.gl;
-        const isDirty = this.app.dirty();
+        const isDirty = true;//this.app.dirty();
         const layerOrder = [0, 1, 2]; // TODO connect this with GUI!
 
         gl.uniform1i(shader.uniforms.pass, shaderConstants.MODE_TEXTURE);
