@@ -114,7 +114,7 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 }
 
 #[wasm_bindgen]
-struct App {
+pub struct App {
     texture: Vec<u8>,
     dirty: bool,
     dispatcher: Dispatcher,
