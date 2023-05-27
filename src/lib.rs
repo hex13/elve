@@ -123,14 +123,17 @@ pub struct App {
 #[wasm_bindgen]
 impl App {
     #[wasm_bindgen(constructor)]
-    pub fn new(width: usize, height: usize) -> App {
-        let mut hello_model = Box::new(drawing_editor::DrawingEditor::new(width, height, 1));
-        hello_model.draw_rect(0, 0, 0, 100, 100, [1.0, 1.0, 0.0, 1.0]);
-        let models: Vec<Box<dyn Model>> = vec![
+    pub fn new(width: usize, height: usize, extra_model: bool) -> App {
+        let mut models: Vec<Box<dyn Model>> = vec![
             Box::new(create_fireworks_model(3000)),
             Box::new(drawing_editor::DrawingEditor::new(width, height, 3)),
-            hello_model,
         ];
+        if extra_model {
+            let mut hello_model = Box::new(drawing_editor::DrawingEditor::new(width, height, 1));
+            hello_model.draw_rect(0, 0, 0, 100, 100, [1.0, 1.0, 0.0, 1.0]);
+            models.push(hello_model);
+        }
+
 
         for (model_idx, model) in models.iter().enumerate() {
             for (index, (pointer, length)) in model.buffers().into_iter().enumerate() {

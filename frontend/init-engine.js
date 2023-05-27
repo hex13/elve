@@ -59,7 +59,7 @@ export function initEngine(count, init) {
             lastLength = engine.memory.buffer.byteLength;
         }
 
-        const mainApp = new App(width, height);
+        const mainApp = new App(width, height, false);
 
         const drawingEditor = {};
         drawingEditor.width = width;
