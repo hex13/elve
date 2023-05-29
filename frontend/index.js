@@ -43,6 +43,7 @@ gl.useProgram(program);
 const rendererConstructors = {
     fireworks: FireworksWebGLRenderable,
     drawingEditor: DrawingEditorWebGLRenderable,
+    extra: DrawingEditorWebGLRenderable,
 };
 const views = models.map(model => {
     let Constr = Object.hasOwn(rendererConstructors, model.name)? rendererConstructors[model.name] : null;

@@ -22,18 +22,18 @@ export const models = [
         lengths: {},
         buffers: {}
     },
-    {
-        name: 'drawingEditor',
-        bufferNames: [
-            'layer0',
-            'layer1',
-            'layer2',
-        ],
-        BufferType: Uint8Array,
-        pointers: {},
-        lengths: {},
-        buffers: {}
-    },
+    // {
+    //     name: 'extra',
+    //     bufferNames: [
+    //         'layer0',
+    //         'layer1',
+    //         'layer2',
+    //     ],
+    //     BufferType: Uint8Array,
+    //     pointers: {},
+    //     lengths: {},
+    //     buffers: {}
+    // },
 ];
 
 export const size = {

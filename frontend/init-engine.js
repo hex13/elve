@@ -18,9 +18,17 @@ export function initEngine(count, init, config) {
         }
 
         const mainApp = new App();
-        mainApp.add_fireworks_model();
-        mainApp.add_drawing_editor_model(width, height);
-        // mainApp.add_extra_model(width, height);
+
+        const modelFactories = {
+            fireworks: () => mainApp.add_fireworks_model(),
+            drawingEditor: () => mainApp.add_drawing_editor_model(width, height),
+            extra: () => mainApp.add_extra_model(width, height),
+        };
+
+        config.models.forEach(model => {
+            const create = Object.hasOwn(modelFactories, model.name)? modelFactories[model.name] : () => {};
+            create();
+        })
         mainApp.init(width, height, true);
 
         models.forEach(model => {
