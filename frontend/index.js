@@ -15,7 +15,7 @@ import * as gui from './gui/gui';
 initEngine(count, init, config);
 function init({ mainApp, models,  }) {
     const canvas = document.getElementById('game');
-    const handlers = createEventHandlers(canvas, mainApp, {width: 1024, height: 1024});
+    const handlers = createEventHandlers(canvas, mainApp, config.size);
 
     canvas.addEventListener('pointerdown', handlers.pointerDown);
     canvas.addEventListener('pointermove', handlers.pointerMove);

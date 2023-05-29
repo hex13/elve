@@ -4,6 +4,7 @@ const componentsPerVertex = 2;
 
 export function initEngine(count, init, config) {
     const { models } = config;
+    const { width, height } = config.size;
     window.pass_buffer = function (modelIndex, bufferIndex, pointer, length) {
         const model = models[modelIndex];
         const key = model.bufferNames[bufferIndex];
@@ -12,9 +13,6 @@ export function initEngine(count, init, config) {
     }
 
     initElve().then(engine => {
-        const width = 1024;
-        const height = 1024;
-
         let c=0;
         let lastLength = 0;
         const check = () => {

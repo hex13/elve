@@ -35,3 +35,8 @@ export const models = [
         buffers: {}
     },
 ];
+
+export const size = {
+    width: 1024,
+    height: 1024,
+};
