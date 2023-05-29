@@ -1,10 +1,11 @@
 import {FireworksWebGLRenderable} from './renderables/FireworksWebGLRenderable.ts';
 import {DrawingEditorWebGLRenderable} from './renderables/DrawingEditorWebGLRenderable.ts';
+import {BitmapWebGLRenderable} from './renderables/BitmapWebGLRenderable.ts';
 
 export const rendererConstructors = {
     fireworks: FireworksWebGLRenderable,
     drawingEditor: DrawingEditorWebGLRenderable,
-    extra: DrawingEditorWebGLRenderable,
+    extra: BitmapWebGLRenderable,
 };
 
 
