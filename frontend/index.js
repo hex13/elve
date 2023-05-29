@@ -1,5 +1,3 @@
-// TODO pass count to Wasm
-const count = 3000;
 
 import {EventKind} from './pkg/elve.js';
 import {shaderConstants} from './shaders';
@@ -8,10 +6,10 @@ import {createEventHandlers} from './canvas-events.js';
 import {Renderer} from './renderer.js';
 import {createShader} from './shaders';
 import * as config from './configs/ambivalent-ant.js';
-import { rendererConstructors } from './engineConfig.js';
+import { createModelFactories, rendererConstructors } from './engineConfig.js';
 import * as gui from './gui/gui';
 
-initEngine(count, init, config);
+initEngine(init, createModelFactories, config);
 function init({ mainApp, models,  }) {
     const canvas = document.getElementById('game');
     const handlers = createEventHandlers(canvas, mainApp, config.size);
