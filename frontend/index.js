@@ -7,9 +7,8 @@ import {initEngine} from './init-engine';
 import {createEventHandlers} from './canvas-events.js';
 import {Renderer} from './renderer.js';
 import {createShader} from './shaders';
-import {FireworksWebGLRenderable} from './renderables/FireworksWebGLRenderable.ts';
-import {DrawingEditorWebGLRenderable} from './renderables/DrawingEditorWebGLRenderable.ts';
 import * as config from './configs/ambivalent-ant.js';
+import { rendererConstructors } from './engineConfig.js';
 import * as gui from './gui/gui';
 
 initEngine(count, init, config);
@@ -40,11 +39,6 @@ const { program, uniforms, attributes } = shader;
 
 gl.useProgram(program);
 
-const rendererConstructors = {
-    fireworks: FireworksWebGLRenderable,
-    drawingEditor: DrawingEditorWebGLRenderable,
-    extra: DrawingEditorWebGLRenderable,
-};
 const views = models.map(model => {
     let Constr = Object.hasOwn(rendererConstructors, model.name)? rendererConstructors[model.name] : null;
     return {renderer: Constr? new Constr(gl, mainApp, renderer, canvas.width, canvas.height, model) : null};
