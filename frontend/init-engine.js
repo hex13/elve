@@ -18,7 +18,10 @@ export function initEngine(count, init, config) {
         }
 
         const mainApp = new App();
-        mainApp.init(width, height, false);
+        mainApp.add_fireworks_model();
+        mainApp.add_drawing_editor_model(width, height);
+        // mainApp.add_extra_model(width, height);
+        mainApp.init(width, height, true);
 
         models.forEach(model => {
             Object.entries(model.pointers).forEach(([key, pointer]) => {

@@ -118,6 +118,7 @@ pub struct App {
     texture: Vec<u8>,
     dirty: bool,
     dispatcher: Option<Dispatcher>,
+    models: Vec<Box<dyn Model>>,
 }
 
 #[wasm_bindgen]
@@ -140,19 +141,23 @@ impl App {
             texture,
             dispatcher: None,
             dirty: true,
+            models: Vec::new(),
         };
         app
     }
+    pub fn add_fireworks_model(&mut self) {
+        self.models.push(Box::new(create_fireworks_model(3000)));
+    }
+    pub fn add_drawing_editor_model(&mut self, width: usize, height: usize) {
+        self.models.push(Box::new(drawing_editor::DrawingEditor::new(width, height, 3)));
+    }
+    pub fn add_extra_model(&mut self, width: usize, height: usize) {
+        let mut hello_model = Box::new(drawing_editor::DrawingEditor::new(width, height, 1));
+        hello_model.draw_rect(0, 0, 0, 100, 100, [1.0, 1.0, 0.0, 1.0]);
+        self.models.push(hello_model);
+    }
     pub fn init(&mut self, width: usize, height: usize, extra_model: bool) {
-        let mut models: Vec<Box<dyn Model>> = vec![
-            Box::new(create_fireworks_model(3000)),
-            Box::new(drawing_editor::DrawingEditor::new(width, height, 3)),
-        ];
-        if extra_model {
-            let mut hello_model = Box::new(drawing_editor::DrawingEditor::new(width, height, 1));
-            hello_model.draw_rect(0, 0, 0, 100, 100, [1.0, 1.0, 0.0, 1.0]);
-            models.push(hello_model);
-        }
+        let mut models: Vec<Box<dyn Model>> = self.models.drain(..).collect();
 
         let controllers: Vec<Box<dyn Controller>> = vec![
             Box::new(FireworksController::new()),
@@ -160,7 +165,6 @@ impl App {
             Box::new(drawing_editor::DrawingEditorController::new()),
         ];
         let modelIndices = vec![0, 1, 1];
-
 
         for (model_idx, model) in models.iter().enumerate() {
             for (index, (pointer, length)) in model.buffers().into_iter().enumerate() {
