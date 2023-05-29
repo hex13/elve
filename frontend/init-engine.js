@@ -24,10 +24,6 @@ export function initEngine(count, init, config) {
 
         const mainApp = new App(width, height, false);
 
-        const drawingEditor = {};
-        drawingEditor.width = width;
-        drawingEditor.height = height;
-
         const fireworks = {};
 
         models.forEach(model => {
@@ -39,7 +35,6 @@ export function initEngine(count, init, config) {
         init({
             mainApp,
             models,
-            drawingEditor,
         });
     });
 }

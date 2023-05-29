@@ -13,9 +13,9 @@ import * as config from './configs/ambivalent-ant.js';
 import * as gui from './gui/gui';
 
 initEngine(count, init, config);
-function init({ mainApp, models, drawingEditor }) {
+function init({ mainApp, models,  }) {
     const canvas = document.getElementById('game');
-    const handlers = createEventHandlers(canvas, mainApp, drawingEditor);
+    const handlers = createEventHandlers(canvas, mainApp, {width: 1024, height: 1024});
 
     canvas.addEventListener('pointerdown', handlers.pointerDown);
     canvas.addEventListener('pointermove', handlers.pointerMove);
