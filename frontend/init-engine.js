@@ -1,7 +1,5 @@
 import initElve, {App} from './pkg/elve.js';
 
-const componentsPerVertex = 2;
-
 export function initEngine(count, init, config) {
     const { models } = config;
     const { width, height } = config.size;
@@ -13,7 +11,6 @@ export function initEngine(count, init, config) {
     }
 
     initElve().then(engine => {
-        let c=0;
         let lastLength = 0;
         const check = () => {
             if (engine.memory.buffer.byteLength > lastLength) console.log("grown!")
@@ -21,8 +18,6 @@ export function initEngine(count, init, config) {
         }
 
         const mainApp = new App(width, height, false);
-
-        const fireworks = {};
 
         models.forEach(model => {
             Object.entries(model.pointers).forEach(([key, pointer]) => {
