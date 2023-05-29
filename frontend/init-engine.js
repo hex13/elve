@@ -17,7 +17,8 @@ export function initEngine(count, init, config) {
             lastLength = engine.memory.buffer.byteLength;
         }
 
-        const mainApp = new App(width, height, false);
+        const mainApp = new App();
+        mainApp.init(width, height, false);
 
         models.forEach(model => {
             Object.entries(model.pointers).forEach(([key, pointer]) => {

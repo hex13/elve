@@ -117,29 +117,13 @@ pub fn create_fireworks_model(count: usize) -> ParticleSystemModel {
 pub struct App {
     texture: Vec<u8>,
     dirty: bool,
-    dispatcher: Dispatcher,
+    dispatcher: Option<Dispatcher>,
 }
 
 #[wasm_bindgen]
 impl App {
     #[wasm_bindgen(constructor)]
-    pub fn new(width: usize, height: usize, extra_model: bool) -> App {
-        let mut models: Vec<Box<dyn Model>> = vec![
-            Box::new(create_fireworks_model(3000)),
-            Box::new(drawing_editor::DrawingEditor::new(width, height, 3)),
-        ];
-        if extra_model {
-            let mut hello_model = Box::new(drawing_editor::DrawingEditor::new(width, height, 1));
-            hello_model.draw_rect(0, 0, 0, 100, 100, [1.0, 1.0, 0.0, 1.0]);
-            models.push(hello_model);
-        }
-
-
-        for (model_idx, model) in models.iter().enumerate() {
-            for (index, (pointer, length)) in model.buffers().into_iter().enumerate() {
-                pass_buffer(model_idx, index, pointer, length);
-            }
-        }
+    pub fn new() -> App {
 
         let mut texture = Vec::new();
         for y in 0..=255 {
@@ -150,28 +134,51 @@ impl App {
                 texture.push(255);
             }
         }
+
+
+        let mut app = App {
+            texture,
+            dispatcher: None,
+            dirty: true,
+        };
+        app
+    }
+    pub fn init(&mut self, width: usize, height: usize, extra_model: bool) {
+        let mut models: Vec<Box<dyn Model>> = vec![
+            Box::new(create_fireworks_model(3000)),
+            Box::new(drawing_editor::DrawingEditor::new(width, height, 3)),
+        ];
+        if extra_model {
+            let mut hello_model = Box::new(drawing_editor::DrawingEditor::new(width, height, 1));
+            hello_model.draw_rect(0, 0, 0, 100, 100, [1.0, 1.0, 0.0, 1.0]);
+            models.push(hello_model);
+        }
+
         let controllers: Vec<Box<dyn Controller>> = vec![
             Box::new(FireworksController::new()),
             Box::new(drawing_editor::DrawRectController::new()),
             Box::new(drawing_editor::DrawingEditorController::new()),
         ];
         let modelIndices = vec![0, 1, 1];
-        let dispatcher = Dispatcher::new(controllers, modelIndices, models, Screen {width, height});
 
-        App {
-            texture,
-            dispatcher,
-            dirty: true,
+
+        for (model_idx, model) in models.iter().enumerate() {
+            for (index, (pointer, length)) in model.buffers().into_iter().enumerate() {
+                pass_buffer(model_idx, index, pointer, length);
+            }
         }
+
+        self.dispatcher = Some(Dispatcher::new(controllers, modelIndices, models, Screen {width, height}));
+        return;
     }
     pub fn texture_pixels(&self) -> *const u8 {
         &self.texture[0]
     }
     pub fn update(&mut self) {
-        self.dispatcher.update();
+        self.dispatcher.as_mut().unwrap().update();
     }
     pub fn set_controller(&mut self,  controller_idx: usize) {
-        self.dispatcher.set_controller(controller_idx);
+        self.dispatcher.as_mut().unwrap().set_controller(controller_idx);
     }
     pub fn dirty(&self) -> bool {
         self.dirty
@@ -183,7 +190,7 @@ impl App {
         self.dispatch_to(DefaultController, kind, x, y);
     }
     pub fn dispatch_to(&mut self, controller_idx: usize, kind: EventKind, x: i32, y: i32) {
-        self.dispatcher.dispatch(controller_idx, kind, x, y);
+        self.dispatcher.as_mut().unwrap().dispatch(controller_idx, kind, x, y);
         self.dirty = true;
     }
 }
