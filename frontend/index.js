@@ -9,10 +9,10 @@ import {Renderer} from './renderer.js';
 import {createShader} from './shaders';
 import {FireworksWebGLRenderable} from './renderables/FireworksWebGLRenderable.ts';
 import {DrawingEditorWebGLRenderable} from './renderables/DrawingEditorWebGLRenderable.ts';
-
+import * as config from './configs/ambivalent-ant.js';
 import * as gui from './gui/gui';
 
-initEngine(count, init);
+initEngine(count, init, config);
 function init({ mainApp, models, drawingEditor }) {
     const canvas = document.getElementById('game');
     const handlers = createEventHandlers(canvas, mainApp, drawingEditor);

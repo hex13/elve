@@ -2,45 +2,8 @@ import initElve, {App} from './pkg/elve.js';
 
 const componentsPerVertex = 2;
 
-export function initEngine(count, init) {
-    const models = [
-        {
-            name: 'fireworks',
-            bufferNames: [
-                'positions',
-                'colors',
-            ],
-            BufferType: Float32Array,
-            pointers: {},
-            lengths: {},
-            buffers: {}
-        },
-        {
-            name: 'drawingEditor',
-            bufferNames: [
-                'layer0',
-                'layer1',
-                'layer2',
-            ],
-            BufferType: Uint8Array,
-            pointers: {},
-            lengths: {},
-            buffers: {}
-        },
-        {
-            name: 'drawingEditor',
-            bufferNames: [
-                'layer0',
-                'layer1',
-                'layer2',
-            ],
-            BufferType: Uint8Array,
-            pointers: {},
-            lengths: {},
-            buffers: {}
-        },
-    ];
-
+export function initEngine(count, init, config) {
+    const { models } = config;
     window.pass_buffer = function (modelIndex, bufferIndex, pointer, length) {
         const model = models[modelIndex];
         const key = model.bufferNames[bufferIndex];
