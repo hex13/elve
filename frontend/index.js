@@ -7,8 +7,8 @@ import {initEngine} from './init-engine';
 import {createEventHandlers} from './canvas-events.js';
 import {Renderer} from './renderer.js';
 import {createShader} from './shaders';
-import {FireworksRenderer} from './fireworks';
-import {DrawingEditorRenderer} from './drawingEditor';
+import {FireworksWebGLRenderable} from './renderables/FireworksWebGLRenderable.ts';
+import {DrawingEditorWebGLRenderable} from './renderables/DrawingEditorWebGLRenderable.ts';
 
 import * as gui from './gui/gui';
 
@@ -41,8 +41,8 @@ const { program, uniforms, attributes } = shader;
 gl.useProgram(program);
 
 const rendererConstructors = {
-    fireworks: FireworksRenderer,
-    drawingEditor: DrawingEditorRenderer,
+    fireworks: FireworksWebGLRenderable,
+    drawingEditor: DrawingEditorWebGLRenderable,
 };
 const views = models.map(model => {
     let Constr = Object.hasOwn(rendererConstructors, model.name)? rendererConstructors[model.name] : null;

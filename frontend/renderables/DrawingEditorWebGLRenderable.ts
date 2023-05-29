@@ -1,6 +1,6 @@
-import {shaderConstants} from './shaders';
+import {shaderConstants} from '../shaders';
 
-export class DrawingEditorRenderer {
+export class DrawingEditorWebGLRenderable {
     app: any;
     renderer: any;
     gl: any;

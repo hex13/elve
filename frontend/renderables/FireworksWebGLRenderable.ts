@@ -1,9 +1,9 @@
-import {shaderConstants} from './shaders';
+import {shaderConstants} from '../shaders';
 
 const count = 3000;
 const componentsPerVertex = 2;
 
-export class FireworksRenderer {
+export class FireworksWebGLRenderable {
     gl: any;
     buffer: unknown;
     colorBuffer: unknown;
