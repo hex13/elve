@@ -10,7 +10,7 @@ export class Renderer {
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         this.gl = gl;
         this.textureFramebuffer = gl.createFramebuffer();
-        this.quad = this.createRenderable(new Float32Array([
+        this.quad = this.createGeometry(new Float32Array([
             -1.0, -1.0,
             1.0, -1.0,
             1.0, 1.0,
@@ -38,19 +38,19 @@ export class Renderer {
         gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
         return buffer;
     }
-    createRenderable(data, componentsPerVertex) {
+    createGeometry(data, componentsPerVertex) {
         return {
             buffer: this.createBuffer(data),
             componentsPerVertex,
             count: data.length / componentsPerVertex,
         };
     }
-    render(shader, renderable) {
+    render(shader, geometry) {
         const gl = this.gl;
-        gl.bindBuffer(gl.ARRAY_BUFFER, renderable.buffer);
-        gl.vertexAttribPointer(shader.attributes.aPosition, renderable.componentsPerVertex, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, geometry.buffer);
+        gl.vertexAttribPointer(shader.attributes.aPosition, geometry.componentsPerVertex, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(shader.attributes.aPosition);
-        gl.drawArrays(gl.TRIANGLES, 0, renderable.count);
+        gl.drawArrays(gl.TRIANGLES, 0, geometry.count);
     }
     renderTo(texture, func) {
         const gl = this.gl;
