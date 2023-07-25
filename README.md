@@ -1,4 +1,6 @@
 this is WIP of WebAssembly based graphics engine/editor. 
+Logic is Rust based.
+Communication between Rust/Wasm and JS is done through buffers to avoid overhead.
 
 current demo - fireworks:
 
